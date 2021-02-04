@@ -1,0 +1,20 @@
+service: lambda-user-service
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: us-east-1
+
+functions:
+  app:
+    handler: app.server
+    events:
+      - http:
+          path: /users
+          method: ANY
+          cors: true
+      - http:
+          path: /roles
+          method: GET
+          cors: true
