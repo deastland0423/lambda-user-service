@@ -19,7 +19,7 @@ app.route('/users')
 })
   .post(async (req, res) => {
     let results = await addUser(req.body);
-  res.status(200).send('YOU ADDED A USER!');
+  res.status(200).send(results);
 })
   .put(async (req, res) => {
   res.status(200).send('YOU UPDATED A USER.');

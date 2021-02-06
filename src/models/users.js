@@ -17,21 +17,25 @@ async function getUsers() {
 }
 
 async function addUser(body) {
-    const { user_email, password } = body;
+    // const { user_email, password } = body;
+    const data = JSON.parse(body);
+    console.log(`DATA: ${data}`);
 
+    const connection = await mysql.connection();
     try {
-        const sql = `INSERT INTO oseitu.users (email_address, password) values (${user_email}, ${password})`;
+        console.log(`entering addUser`);
+        const sql = `INSERT INTO oseitu.users (email_address, password) values ('${data.email_address}', '${data.password}')`;
 
-        let response = await mysql.connection.query(sql);
+        // console.log('SQL: ', sql);
 
-        return response;
-        //logic
+        let response = await connection.query(sql);
+
+        return `User ${data.email_address} added to database.`;
+
     } catch (err) {
         throw err
-        //err hanndle
     } finally {
-        await mysql.connection.release();
-        // final steps
+        await connection.release();
     }
 
 }
