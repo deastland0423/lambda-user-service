@@ -1,7 +1,7 @@
 const express = require('express');
 const sls = require('serverless-http');
 const app = express();
-const { getUsers } = require('./src/models/users');
+const { getUsers, addUser } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
 
 // Fix header to allow cross-origin
@@ -18,6 +18,7 @@ app.route('/users')
     res.status(200).send(results);
 })
   .post(async (req, res) => {
+    let results = await addUser(req.body);
   res.status(200).send('YOU ADDED A USER!');
 })
   .put(async (req, res) => {

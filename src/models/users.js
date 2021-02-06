@@ -16,4 +16,34 @@ async function getUsers() {
     }
 }
 
-module.exports = { getUsers };
+async function addUser(body) {
+    const { user_email, password } = body;
+
+    try {
+        const sql = `INSERT INTO oseitu.users (email_address, password) values (${user_email}, ${password})`;
+
+        let response = await mysql.connection.query(sql);
+
+        return response;
+        //logic
+    } catch (err) {
+        throw err
+        //err hanndle
+    } finally {
+        await mysql.connection.release();
+        // final steps
+    }
+
+}
+
+async function getUserRoles() {
+    const sql = 'SELECT u.email_address, r.role_name FROM oseitu.users u, oseitu.user_roles ur, oseitu.roles r WHERE u.user_id = ur.user_id AND ur.role_id = r.role_id';
+
+    try {
+        console.log('ss');
+    } catch (err) {
+        console.error('dd');
+    }
+}
+
+module.exports = { getUsers, addUser };
