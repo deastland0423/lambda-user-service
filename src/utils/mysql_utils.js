@@ -1,12 +1,9 @@
 // This is an attempt to create a mysql access library that supports async/await.
 const mysql = require('mysql');
 
-let dbConfig = {
-    host: 'campaign-test-3.cjojv7gsvzpz.us-east-1.rds.amazonaws.com',
-    user: 'oseitu',
-    password: 'oseitu',
-    database: 'oseitu'
-};
+var fs = require('fs');
+var secrets = JSON.parse(fs.readFileSync('secrets.json', 'utf8'));
+let dbConfig = secrets.database;
 
 const pool = mysql.createPool(dbConfig);
 
