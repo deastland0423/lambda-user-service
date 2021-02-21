@@ -36,4 +36,5 @@ app
   res.status(200).send(results);
 });
 
+module.exports.express = app;
 module.exports.server = sls(app);
