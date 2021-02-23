@@ -1,0 +1,3 @@
+[default]
+region = country-region-N
+output = json
