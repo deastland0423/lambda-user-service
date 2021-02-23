@@ -1,6 +1,9 @@
 const express = require('express');
 const sls = require('serverless-http');
 const app = express();
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 const { getUsers, addUser } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
 const { getLocations, addLocation } = require('./src/models/locations');
@@ -8,6 +11,7 @@ const { getLocations, addLocation } = require('./src/models/locations');
 // Fix header to allow cross-origin
 app.use( (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 
@@ -19,8 +23,12 @@ app.route('/users')
     res.status(200).send(results);
 })
   .post(async (req, res) => {
-    let results = await addUser(req.body);
-  res.status(200).send(results);
+    try {
+      let results = await addUser(req.body);
+      res.status(200).send(results);
+    } catch(err) {
+      res.status(400).send(err.message);
+    }
 })
   .put(async (req, res) => {
   res.status(200).send('YOU UPDATED A USER.');

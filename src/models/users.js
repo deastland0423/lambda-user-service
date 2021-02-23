@@ -16,10 +16,8 @@ async function getUsers() {
     }
 }
 
-async function addUser(body) {
-    // const { user_email, password } = body;
-    const data = JSON.parse(body);
-    console.log(`DATA: ${data}`);
+async function addUser(data) {
+    console.log('addUser data: ', data);
 
     const connection = await mysql.connection();
     try {
