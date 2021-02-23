@@ -3,6 +3,7 @@ const sls = require('serverless-http');
 const app = express();
 const { getUsers, addUser } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
+const { getLocations, addLocation } = require('./src/models/locations');
 
 // Fix header to allow cross-origin
 app.use( (req, res, next) => {
@@ -33,6 +34,14 @@ app
   .get('/roles', async (req, res, next) => {
   // Fetch all roles from DB
   let results = await getRoles();
+  res.status(200).send(results);
+});
+
+// Routing all Locations queries
+app
+  .get('/locations', async (req, res, next) => {
+  // Fetch all locations from DB
+  let results = await getLocations();
   res.status(200).send(results);
 });
 
