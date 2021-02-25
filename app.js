@@ -46,11 +46,19 @@ app
 });
 
 // Routing all Locations queries
-app
-  .get('/locations', async (req, res, next) => {
+app.route('/locations')
+  .get(async (req, res) => {
   // Fetch all locations from DB
   let results = await getLocations();
   res.status(200).send(results);
+})
+.post(async (req, res) => {
+  try {
+    let results = await addLocation(req.body);
+    res.status(200).send(results);
+  } catch(err) {
+    res.status(400).send(err.message);
+  }
 });
 
 module.exports.express = app;

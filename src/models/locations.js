@@ -16,9 +16,8 @@ async function getLocations() {
     }
 }
 
-async function addLocation(body) {
-    const data = JSON.parse(body);
-    console.log(`DATA: ${data}`);
+async function addLocation(data) {
+    console.log('addLocation data: ', data);
 
     const connection = await mysql.connection();
     try {
