@@ -6,7 +6,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 const { getUsers, addUser } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
-const { getLocations, addLocation, deleteLocation } = require('./src/models/locations');
+const { getLocations, addLocation, deleteLocation, updateLocation } = require('./src/models/locations');
 
 // Fix header to allow cross-origin
 app.use( (req, res, next) => {
@@ -73,6 +73,14 @@ app.route('/location/:location_id')
 .delete(async (req, res) => {
   try {
     let results = await deleteLocation(req.params);
+    res.status(200).send(results);
+  } catch(err) {
+    res.status(400).send(err.message);
+  }
+})
+.put(async (req, res) => {
+  try {
+    let results = await updateLocation(req.params.location_id, req.body);
     res.status(200).send(results);
   } catch(err) {
     res.status(400).send(err.message);
