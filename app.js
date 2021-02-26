@@ -6,14 +6,21 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 const { getUsers, addUser } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
-const { getLocations, addLocation } = require('./src/models/locations');
+const { getLocations, addLocation, deleteLocation } = require('./src/models/locations');
 
 // Fix header to allow cross-origin
 app.use( (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', "Origin, X-Requested-With, Content-Type, Accept");
+  res.header('Access-Control-Allow-Headers', "Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Headers, Authorization");
+  res.header('Access-Control-Allow-Methods', "GET, POST, OPTIONS, PUT, DELETE");
+  res.header('Access-Control-Allow-Credentials', 'true');
+  if(req.method == "OPTIONS") {
+    res.status(204).send();
+    return
+  }
   next();
 });
+
 
 // Routing all Users queries
 app.route('/users')
@@ -59,7 +66,19 @@ app.route('/locations')
   } catch(err) {
     res.status(400).send(err.message);
   }
-});
+})
+;
+
+app.route('/location/:location_id')
+.delete(async (req, res) => {
+  try {
+    let results = await deleteLocation(req.params);
+    res.status(200).send(results);
+  } catch(err) {
+    res.status(400).send(err.message);
+  }
+})
+;
 
 module.exports.express = app;
 module.exports.server = sls(app);
