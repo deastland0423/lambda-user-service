@@ -7,7 +7,8 @@ app.use(bodyParser.json());
 const { getUsers, addUser } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
 const locationHandler = require('./src/models/locations');
-const gameSessionHandler = require('./src/models/game_sessions');
+const gameSessionHandler = require('./src/models/sessions');
+const adventureHandler = require('./src/models/adventures');
 
 // Fix header to allow cross-origin
 app.use( (req, res, next) => {
@@ -95,8 +96,9 @@ function crudRoutes(entity_type, ormHandler) {
 }
 
 crudRoutes('location', locationHandler);
-crudRoutes('game_session', gameSessionHandler);
-app.route(`/game_sessions/view`)
+crudRoutes('session', gameSessionHandler);
+crudRoutes('adventure', adventureHandler);
+app.route(`/sessions/view`)
 .get(async (req, res) => {
   let results = await gameSessionHandler.getView();
   res.status(200).send(results);
