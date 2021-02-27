@@ -39,6 +39,10 @@ functions:
           method: ANY
           cors: true
       - http:
+          path: /adventures/view
+          method: GET
+          cors: true
+      - http:
           path: /settlements
           method: ANY
           cors: true

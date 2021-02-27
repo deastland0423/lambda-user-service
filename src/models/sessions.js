@@ -25,7 +25,7 @@ const ormDef = {
 }
 
 async function getView() {
-    console.log('entering getView');
+    console.log('entering sessions.getView');
     const connection = await mysql.connection();
     try {
         const sql = `SELECT s.*, u.user_id, u.username, u.email_address FROM ${ormDef.table} s LEFT JOIN users u ON s.host_user_id = u.user_id`
