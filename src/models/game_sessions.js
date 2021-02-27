@@ -24,6 +24,21 @@ const ormDef = {
     ]
 }
 
+async function getView() {
+    console.log('entering getView');
+    const connection = await mysql.connection();
+    try {
+        const sql = `SELECT s.*, u.user_id, u.username, u.email_address FROM ${ormDef.table} s LEFT JOIN users u ON s.host_user_id = u.user_id`
+        console.log(`DEBUG: getView SQL: ${sql}`)
+        let recordList = await connection.query(sql);
+        return recordList;
+    } catch(err) {
+        throw err;
+    } finally {
+        await connection.release();
+    }
+}
+
 async function getRecords() {
     console.log('entering getRecords');
     const connection = await mysql.connection();
@@ -120,6 +135,7 @@ async function updateRecord(record_id, data) {
 }
 
 const handler = {
+    getView: getView,
     getRecords: getRecords,
     addRecord: addRecord,
     deleteRecord: deleteRecord,
