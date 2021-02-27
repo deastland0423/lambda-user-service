@@ -4,6 +4,7 @@ const mysql = require('mysql');
 const fs = require('fs');
 const secrets = JSON.parse(fs.readFileSync('secrets.json', 'utf8'));
 const dbConfig = secrets.database;
+const db_name = dbConfig.database;
 
 const pool = mysql.createPool(dbConfig);
 
@@ -49,4 +50,4 @@ const query = (sql, binding) => {
     });
 };
 
-module.exports = { pool, connection, query };
+module.exports = { pool, connection, query, db_name };
