@@ -6,7 +6,7 @@ async function getUsers() {
     try {
         console.log('entering getUsers');
 
-        let userList = await connection.query('select * from oseitu.users');
+        let userList = await connection.query('select user_id, username, email_address from oseitu.users');
 
         return userList;
     } catch(err) {

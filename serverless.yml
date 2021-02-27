@@ -18,3 +18,23 @@ functions:
           path: /roles
           method: GET
           cors: true
+      - http:
+          path: /locations
+          method: ANY
+          cors: true
+      - http:
+          path: /characters
+          method: ANY
+          cors: true
+      - http:
+          path: /sessions
+          method: ANY
+          cors: true
+      - http:
+          path: /adventures
+          method: ANY
+          cors: true
+      - http:
+          path: /settlements
+          method: ANY
+          cors: true
