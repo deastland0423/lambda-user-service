@@ -2,18 +2,24 @@ const mysql = require('../utils/mysql_utils');
 
 const ormDef = {
     label: 'Game Session',
-    table: 'game_sessions',
-    id_field: 'game_session_id',
+    table: 'sessions',
+    id_field: 'session_id',
     insert_fields: [
         {
-            id: 'creator_dm_user_id',
+            id: 'host_user_id',
         },
         {
-            id: 'start_timestamp',
+            id: 'start_time',
             quoted: true
         },
         {
-            id: 'duration_min',
+            id: 'duration',
+        },
+        {
+            id: 'max_characters',
+        },
+        {
+            id: 'reserved',
         }
     ]
 }

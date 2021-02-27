@@ -6,7 +6,23 @@ const ormDef = {
     id_field: 'location_id',
     insert_fields: [
         {
-            field_name: 'name',
+            id: 'name',
+            quoted: true
+        },
+        {
+            id: 'is_empty',
+            quoted: true
+        },
+        {
+            id: 'map_id',
+            quoted: true
+        },
+        {
+            id: 'hex',
+            quoted: true
+        },
+        {
+            id: 'sub_hex',
             quoted: true
         }
     ]
