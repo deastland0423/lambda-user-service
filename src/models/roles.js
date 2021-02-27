@@ -6,7 +6,7 @@ async function getRoles() {
     try {
         console.log('entering getRoles');
 
-        let userList = await connection.query('select role from oseitu.user_roles');
+        let userList = await connection.query('select * from oseitu.roles');
 
         return userList;
     } catch(err) {
