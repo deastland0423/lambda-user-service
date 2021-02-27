@@ -135,6 +135,7 @@ async function updateRecord(record_id, data) {
 }
 
 const handler = {
+    getView: getView,
     getRecords: getRecords,
     addRecord: addRecord,
     deleteRecord: deleteRecord,
