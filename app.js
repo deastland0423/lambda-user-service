@@ -95,8 +95,8 @@ function crudRoutes(entity_type, ormHandler) {
 }
 
 crudRoutes('location', locationHandler);
-crudRoutes('game_session', gameSessionHandler);
-app.route(`/game_sessions/view`)
+crudRoutes('session', gameSessionHandler);
+app.route(`/sessions/view`)
 .get(async (req, res) => {
   let results = await gameSessionHandler.getView();
   res.status(200).send(results);
