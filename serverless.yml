@@ -32,11 +32,15 @@ functions:
           cors: true
       - http:
           path: /sessions/view
-          method: ANY
+          method: GET
           cors: true
       - http:
           path: /adventures
           method: ANY
+          cors: true
+      - http:
+          path: /adventures/view
+          method: GET
           cors: true
       - http:
           path: /settlements
