@@ -1,39 +1,124 @@
-CREATE TABLE `users` (
+-- --------------------------------------------------------
+-- Host:                         campaign-test-3.cjojv7gsvzpz.us-east-1.rds.amazonaws.com
+-- Server version:               8.0.20 - Source distribution
+-- Server OS:                    Linux
+-- HeidiSQL Version:             11.2.0.6213
+-- --------------------------------------------------------
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+-- Dumping structure for table oseitu.adventures
+CREATE TABLE IF NOT EXISTS `adventures` (
+  `adventure_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(250) NOT NULL,
+  `session_id` int NOT NULL DEFAULT '0',
+  `location_d` int NOT NULL DEFAULT '0',
+  `character_count` int NOT NULL DEFAULT '0' COMMENT 'Number of characters currently signed up',
+  PRIMARY KEY (`adventure_id`),
+  KEY `adventures_session_id_sessions_session_id` (`session_id`),
+  KEY `adventures_location_id_locations_location_id` (`location_d`),
+  CONSTRAINT `adventures_location_id_locations_location_id` FOREIGN KEY (`location_d`) REFERENCES `locations` (`location_id`),
+  CONSTRAINT `adventures_session_id_sessions_session_id` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`session_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='An adventure is a reservation of a session at a given location, with a number of characters.';
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table oseitu.adventure_participants
+CREATE TABLE IF NOT EXISTS `adventure_participants` (
+  `adventure_id` int NOT NULL,
+  `character_id` int NOT NULL,
+  KEY `adventure_participants_adventure_id_adventures` (`adventure_id`),
+  KEY `adventure_participants_character_id_characters` (`character_id`),
+  CONSTRAINT `adventure_participants_adventure_id_adventures` FOREIGN KEY (`adventure_id`) REFERENCES `adventures` (`adventure_id`),
+  CONSTRAINT `adventure_participants_character_id_characters` FOREIGN KEY (`character_id`) REFERENCES `characters` (`character_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='List the characters that are participating in each adventure';
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table oseitu.characters
+CREATE TABLE IF NOT EXISTS `characters` (
+  `character_id` int NOT NULL,
+  `owner_user_id` int NOT NULL,
+  `name` varchar(250) NOT NULL DEFAULT '',
+  `class` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `level` int NOT NULL DEFAULT '1',
+  `gold` decimal(20,2) DEFAULT NULL,
+  `home_base_settlement_id` int DEFAULT '1',
+  PRIMARY KEY (`character_id`),
+  KEY `characters_owner_user_id_users` (`owner_user_id`),
+  KEY `characters_home_base_settlement_id_settlements` (`home_base_settlement_id`),
+  CONSTRAINT `characters_home_base_settlement_id_settlements` FOREIGN KEY (`home_base_settlement_id`) REFERENCES `settlements` (`settlement_id`),
+  CONSTRAINT `characters_owner_user_id_users` FOREIGN KEY (`owner_user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='List of all characters for Adventure Time';
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table oseitu.locations
+CREATE TABLE IF NOT EXISTS `locations` (
+  `location_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(250) NOT NULL DEFAULT '',
+  `is_empty` tinyint NOT NULL DEFAULT '0',
+  `map_id` int NOT NULL DEFAULT '1',
+  `hex` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0' COMMENT 'Hex on the big map',
+  `sub_hex` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT 'Small hex within hex',
+  PRIMARY KEY (`location_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Any location on the campaign map. Typically a dungeon or a 6-mile hex.';
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table oseitu.sessions
+CREATE TABLE IF NOT EXISTS `sessions` (
+  `session_id` int NOT NULL AUTO_INCREMENT,
+  `host_user_id` int NOT NULL,
+  `start_time` timestamp NOT NULL,
+  `duration` int NOT NULL DEFAULT '180' COMMENT 'Number of minutes for the session.',
+  `max_characters` int NOT NULL DEFAULT '6',
+  `reserved` tinyint NOT NULL DEFAULT '0' COMMENT '1 if reserved, otherwise 0',
+  PRIMARY KEY (`session_id`),
+  KEY `sessions_host_user_id_user_id` (`host_user_id`),
+  CONSTRAINT `sessions_host_user_id_user_id` FOREIGN KEY (`host_user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Open time slots being offered by DMs for players to sign up.';
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table oseitu.settlements
+CREATE TABLE IF NOT EXISTS `settlements` (
+  `settlement_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(250) NOT NULL,
+  PRIMARY KEY (`settlement_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table oseitu.users
+CREATE TABLE IF NOT EXISTS `users` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `email_address` varchar(250) NOT NULL,
   `password` varchar(250) NOT NULL,
+  `username` varchar(250) NOT NULL,
   PRIMARY KEY (`user_id`),
-  UNIQUE KEY `email_address` (`email_address`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `email_address` (`email_address`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `roles` (
-  `role_id` int NOT NULL AUTO_INCREMENT,
-  `role_name` varchar(50) NOT NULL,
-  PRIMARY KEY (`role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+-- Data exporting was unselected.
 
-CREATE TABLE `user_roles` (
-  `user_id` int NOT NULL,
-  `role_id` int NOT NULL,
-  KEY `fk_user_roles_user_id` (`user_id`),
-  KEY `fk_user_roles_role_id` (`role_id`),
-  CONSTRAINT `fk_user_roles_role_id` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`),
-  CONSTRAINT `fk_user_roles_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Links each user to the various roles they have in the application. A user can have many roles.';
+-- Dumping structure for table oseitu.user_roles
+CREATE TABLE IF NOT EXISTS `user_roles` (
+  `user_id` int DEFAULT NULL,
+  `role` enum('PLAYER','DM','ADMIN') DEFAULT NULL,
+  KEY `user_roles_user_id` (`user_id`),
+  CONSTRAINT `user_roles_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Lists all of the roles for each user';
 
-CREATE TABLE `locations` (
-  `location_id` int NOT NULL,
-  `name` varchar(255) NOT NULL,
-  PRIMARY KEY (`location_id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+-- Data exporting was unselected.
 
-CREATE TABLE `game_sessions` (
-    `game_session_id` int NOT NULL AUTO_INCREMENT,
-    `creator_dm_user_id` int NOT NULL,
-    `start_timestamp` TIMESTAMP NOT NULL,
-    `duration_min` int NOT NULL,
-    PRIMARY KEY (`game_session_id`),
-    KEY `fk_game_sessions_creator_dm_user_id` (`creator_dm_user_id`),
-    CONSTRAINT `fk_game_sessions_creator_dm_user_id` FOREIGN KEY (`creator_dm_user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
