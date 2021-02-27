@@ -39,7 +39,7 @@ async function addUser(data) {
 }
 
 async function getUserRoles() {
-    const sql = 'SELECT u.email_address, r.role_name FROM oseitu.users u, oseitu.user_roles ur, oseitu.roles r WHERE u.user_id = ur.user_id AND ur.role_id = r.role_id';
+    const sql = 'SELECT u.username, ur.role FROM users u, user_roles ur WHERE u.user_id = ur.user_id;';
 
     try {
         console.log('ss');
