@@ -31,6 +31,10 @@ functions:
           method: ANY
           cors: true
       - http:
+          path: /sessions/view
+          method: ANY
+          cors: true
+      - http:
           path: /adventures
           method: ANY
           cors: true
