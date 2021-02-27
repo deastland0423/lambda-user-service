@@ -27,3 +27,13 @@ CREATE TABLE `locations` (
   PRIMARY KEY (`location_id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `game_sessions` (
+    `game_session_id` int NOT NULL AUTO_INCREMENT,
+    `creator_dm_user_id` int NOT NULL,
+    `start_timestamp` TIMESTAMP NOT NULL,
+    `duration_min` int NOT NULL,
+    PRIMARY KEY (`game_session_id`),
+    KEY `fk_game_sessions_creator_dm_user_id` (`creator_dm_user_id`),
+    CONSTRAINT `fk_game_sessions_creator_dm_user_id` FOREIGN KEY (`creator_dm_user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

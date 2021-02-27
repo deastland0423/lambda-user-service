@@ -6,7 +6,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 const { getUsers, addUser } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
-const { getLocations, addLocation, deleteLocation, updateLocation } = require('./src/models/locations');
+const locationHandler = require('./src/models/locations');
+const gameSessionHandler = require('./src/models/game_sessions');
 
 // Fix header to allow cross-origin
 app.use( (req, res, next) => {
@@ -52,41 +53,50 @@ app
   res.status(200).send(results);
 });
 
-// Routing all Locations queries
-app.route('/locations')
-  .get(async (req, res) => {
-  // Fetch all locations from DB
-  let results = await getLocations();
-  res.status(200).send(results);
-})
-.post(async (req, res) => {
-  try {
-    let results = await addLocation(req.body);
-    res.status(200).send(results);
-  } catch(err) {
-    res.status(400).send(err.message);
-  }
-})
-;
 
-app.route('/location/:location_id')
-.delete(async (req, res) => {
-  try {
-    let results = await deleteLocation(req.params);
+function crudRoutes(entity_type, ormHandler) {
+  //TODO: move these to entityDef & share w/ front-end
+  const entity_type_plural = entity_type + 's';
+  const entity_type_id_field = entity_type + '_id';
+
+  app.route(`/${entity_type_plural}`)
+  .get(async (req, res) => {
+    let results = await ormHandler.getRecords();
     res.status(200).send(results);
-  } catch(err) {
-    res.status(400).send(err.message);
-  }
-})
-.put(async (req, res) => {
-  try {
-    let results = await updateLocation(req.params.location_id, req.body);
-    res.status(200).send(results);
-  } catch(err) {
-    res.status(400).send(err.message);
-  }
-})
-;
+  })
+  .post(async (req, res) => {
+    try {
+      let results = await ormHandler.addRecord(req.body);
+      res.status(200).send(results);
+    } catch(err) {
+      res.status(400).send(err.message);
+    }
+  })
+  ;
+
+  app.route(`/${entity_type}/:${entity_type_id_field}`)
+  .delete(async (req, res) => {
+    try {
+      let results = await ormHandler.deleteRecord(req.params);
+      res.status(200).send(results);
+    } catch(err) {
+      res.status(400).send(err.message);
+    }
+  })
+  .put(async (req, res) => {
+    try {
+      let results = await ormHandler.updateRecord(req.params[entity_type_id_field], req.body);
+      res.status(200).send(results);
+    } catch(err) {
+      res.status(400).send(err.message);
+    }
+  })
+  ;
+}
+
+crudRoutes('location', locationHandler);
+crudRoutes('game_session', gameSessionHandler);
+
 
 module.exports.express = app;
 module.exports.server = sls(app);
