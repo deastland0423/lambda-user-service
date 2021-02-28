@@ -16,12 +16,14 @@ async function getUsers() {
 }
 
 async function verifyUser(email_address, password) {
-    console.log('verifying login for: ', email_address);
 
-    const sql = `SELECT count(*) as count FROM users WHERE email_address = '${email_address}' AND password = '${password}'`;
-
+    const connection = await mysql.connection();
     try {
-        let userCount = await mysql.connection.query(sql);
+        console.log('verifying login for: ', email_address);
+
+        const sql = `SELECT count(*) as count FROM users WHERE email_address = '${email_address}' AND password = '${password}'`;
+
+        let userCount = await connection.query(sql);
 
         console.log('Result from verifying user: ', userCount);
 
@@ -29,9 +31,8 @@ async function verifyUser(email_address, password) {
     } catch (err) {
         throw err;
     } finally {
-        await mysql.connection.release();
+        await connection.release();
     }
-
 }
 
 async function addUser(data) {

@@ -4,7 +4,7 @@ const app = express();
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-const { getUsers, addUser } = require('./src/models/users');
+const { getUsers, addUser, verifyUser } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
 const locationHandler = require('./src/models/locations');
 const sessionHandler = require('./src/models/sessions');
@@ -38,6 +38,7 @@ app.route('/users')
   .post(async (req, res) => {
     try {
       let results = await addUser(req.body);
+      
       res.status(200).send(results);
     } catch(err) {
       res.status(400).send(err.message);
@@ -68,10 +69,15 @@ app
 
     let results = await verifyUser(email_address, password);
 
-    res.status(200).send(results);
-    } catch(err) {
+    // If count is 1, then the username/password match. Otherwise it's a bad login attempt.
+    if (results[0].count == 1) {
+      res.status(200).send( { message: 'Successful login'});
+    } else {
+      res.status(401).send( { message: 'Username/password incorrect.' });
+    }
+
+  } catch(err) {
       res.status(500).send( { message: err.message, error: err})
-      // logic for catch
     }
   });
 
