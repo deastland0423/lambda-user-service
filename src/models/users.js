@@ -15,6 +15,25 @@ async function getUsers() {
     }
 }
 
+async function verifyUser(email_address, password) {
+    console.log('verifying login for: ', email_address);
+
+    const sql = `SELECT count(*) as count FROM users WHERE email_address = '${email_address}' AND password = '${password}'`;
+
+    try {
+        let userCount = await mysql.connection.query(sql);
+
+        console.log('Result from verifying user: ', userCount);
+
+        return userCount;
+    } catch (err) {
+        throw err;
+    } finally {
+        await mysql.connection.release();
+    }
+
+}
+
 async function addUser(data) {
     console.log('addUser data: ', data);
     const connection = await mysql.connection();
@@ -40,4 +59,4 @@ async function getUserRoles() {
     }
 }
 
-module.exports = { getUsers, addUser };
+module.exports = { getUsers, addUser, verifyUser };

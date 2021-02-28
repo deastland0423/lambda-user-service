@@ -46,3 +46,7 @@ functions:
           path: /settlements
           method: ANY
           cors: true
+      - http:
+          path: /login
+          method: POST
+          cors: true

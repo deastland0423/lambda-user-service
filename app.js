@@ -10,6 +10,10 @@ const locationHandler = require('./src/models/locations');
 const sessionHandler = require('./src/models/sessions');
 const adventureHandler = require('./src/models/adventures');
 
+// This may also allow CORS. Have not tested yet.
+// const cors = require('cors');
+// app.use(cors());
+
 // Fix header to allow cross-origin
 app.use( (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -54,7 +58,24 @@ app
   res.status(200).send(results);
 });
 
+app
+  .post('/login', async (req, res) => {
 
+    try {
+      // logic for login
+    const email_address = req.body.email_address;
+    const password = req.body.password;
+
+    let results = await verifyUser(email_address, password);
+
+    res.status(200).send(results);
+    } catch(err) {
+      res.status(500).send( { message: err.message, error: err})
+      // logic for catch
+    }
+  });
+
+// Genericized CRUD operation for backend data tablse
 function crudRoutes(entity_type, ormHandler) {
   //TODO: move these to entityDef & share w/ front-end
   const entity_type_plural = entity_type + 's';
