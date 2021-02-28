@@ -1,5 +1,25 @@
 const mysql = require('../utils/mysql_utils');
 
+const ormDef = {
+    label: 'Users',
+    table: 'users',
+    id_field: 'user_id',
+    insert_fields: [
+        {
+            id: 'email_address',
+            quoted: true
+        },
+        {
+            id: 'password',
+            quoted: true
+        },
+        {
+            id: 'username',
+            quoted: true
+        }
+    ]
+}
+
 async function getUsers() {
     const connection = await mysql.connection();
     try {
@@ -60,4 +80,59 @@ async function getUserRoles() {
     }
 }
 
-module.exports = { getUsers, addUser, verifyUser };
+
+async function deleteUser(data) {
+    console.log('deleteRecord data: ', data);
+    const connection = await mysql.connection();
+    try {
+        const sql = `DELETE FROM ${ormDef.table} WHERE ${ormDef.id_field} = ${data[ormDef.id_field]}`;
+        console.log(`deleteRecord SQL: ${sql}`);
+        let response = await connection.query(sql);
+        if(response.affectedRows) {
+            result = 'deleted from database'
+        } else {
+            result = 'was not found'
+        }
+        return `${ormDef.table} ${data[ormDef.id_field]} ${result}.`;
+    } catch (err) {
+        throw err
+    } finally {
+        await connection.release();
+    }
+}
+
+
+async function updateUser(record_id, data) {
+    console.log(`updateRecord (${record_id}) data: `, data);
+    const connection = await mysql.connection();
+    try {
+        let fieldUpdates = [];
+        ormDef.insert_fields.forEach(field => {
+            if (field.id in data) {
+                if (field.quoted) {
+                    fieldUpdates.push(`${field.id} = '${data[field.id]}'`)
+                } else {
+                    fieldUpdates.push(`${field.id} = ${data[field.id]}`)
+                }
+            }
+        })
+        if (fieldUpdates.length == 0) {
+            return 'No data to update.';
+        }
+        const setSql = fieldUpdates.join(', ')
+        const sql = `UPDATE ${ormDef.table} SET ${setSql} WHERE ${ormDef.id_field} = ${record_id}`;
+        console.log(`entering updateRecord: sql=${sql}`);
+        let response = await connection.query(sql);
+        if(response.affectedRows) {
+            result = 'was updated'
+        } else {
+            result = 'had no changes'
+        }
+        return `${ormDef.table} ${record_id} ${result}.`;
+    } catch (err) {
+        throw err
+    } finally {
+        await connection.release();
+    }
+}
+module.exports = { getUsers, addUser, verifyUser, deleteUser, updateUser };

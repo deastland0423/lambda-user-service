@@ -4,7 +4,7 @@ const app = express();
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-const { getUsers, addUser, verifyUser } = require('./src/models/users');
+const { getUsers, addUser, verifyUser, deleteUser, updateUser } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
 const locationHandler = require('./src/models/locations');
 const sessionHandler = require('./src/models/sessions');
@@ -44,12 +44,25 @@ app.route('/users')
       res.status(400).send(err.message);
     }
 })
-  .put(async (req, res) => {
-  res.status(200).send('YOU UPDATED A USER.');
+app.route(`/user/:user_id`)
+.delete(async (req, res) => {
+  try {
+    let results = await deleteUser(req.params);
+    res.status(200).send(results);
+  } catch(err) {
+    res.status(400).send(err.message);
+  }
 })
-  .delete(async (req, res) => {
-  res.status(200).send('DELETED!!!!');
-});
+.put(async (req, res) => {
+  try {
+    let results = await updateUser(req.params.user_id, req.body);
+    res.status(200).send(results);
+  } catch(err) {
+    res.status(400).send(err.message);
+  }
+})
+;
+
 
 // Routing all Roles queries
 app
