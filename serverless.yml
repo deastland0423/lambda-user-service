@@ -27,6 +27,10 @@ functions:
           method: ANY
           cors: true
       - http:
+          path: /characters/view
+          method: GET
+          cors: true
+      - http:
           path: /sessions
           method: ANY
           cors: true

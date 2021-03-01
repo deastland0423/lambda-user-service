@@ -151,13 +151,17 @@ app.route(`/sessions/view`)
 .get(async (req, res) => {
   let results = await sessionHandler.getView();
   res.status(200).send(results);
-})
+});
 app.route(`/adventures/view`)
 .get(async (req, res) => {
   let results = await adventureHandler.getView();
   res.status(200).send(results);
-})
-
+});
+app.route('/characters/view')
+  .get(async (req, res) => {
+    let results = await characterHandler.getView();
+    res.status(200).send(results);
+  });
 
 module.exports.express = app;
 module.exports.server = sls(app);
