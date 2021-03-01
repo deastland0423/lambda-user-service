@@ -9,6 +9,8 @@ const { getRoles } = require('./src/models/roles');
 const locationHandler = require('./src/models/locations');
 const sessionHandler = require('./src/models/sessions');
 const adventureHandler = require('./src/models/adventures');
+const characterHandler = require('./src/models/characters');
+const settlementHandler = require('./src/models/settlements');
 
 // This may also allow CORS. Have not tested yet.
 // const cors = require('cors');
@@ -76,21 +78,23 @@ app
   .post('/login', async (req, res) => {
 
     try {
-      // logic for login
-    const email_address = req.body.email_address;
-    const password = req.body.password;
+      
+      const email_address = req.body.email_address;
+      const password = req.body.password;
 
-    let results = await verifyUser(email_address, password);
+      console.log('INCOMING BODY: ', req.body);
 
-    // If count is 1, then the username/password match. Otherwise it's a bad login attempt.
-    if (results[0].count == 1) {
-      res.status(200).send( { message: 'Successful login'});
-    } else {
-      res.status(401).send( { message: 'Username/password incorrect.' });
-    }
+      let results = await verifyUser(email_address, password);
+
+      if (Array.isArray(results) && results.length) {
+        res.status(200).send(results[0]);
+      } else {
+        res.status(401).send( { message: 'User login failed.'});
+      }
+
 
   } catch(err) {
-      res.status(500).send( { message: err.message, error: err})
+      res.status(401).send( { message: err.message, error: err})
     }
   });
 
@@ -135,14 +139,19 @@ function crudRoutes(entity_type, ormHandler) {
   ;
 }
 
+// Route setup for standard CRUD operations
+crudRoutes('character', characterHandler);
 crudRoutes('location', locationHandler);
+crudRoutes('settlement', settlementHandler);
+crudRoutes('adventure', adventureHandler);
 crudRoutes('session', sessionHandler);
+
+// Route setup for fetch operations with custom queries.
 app.route(`/sessions/view`)
 .get(async (req, res) => {
   let results = await sessionHandler.getView();
   res.status(200).send(results);
 })
-crudRoutes('adventure', adventureHandler);
 app.route(`/adventures/view`)
 .get(async (req, res) => {
   let results = await adventureHandler.getView();

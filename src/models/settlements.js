@@ -1,33 +1,45 @@
 const mysql = require('../utils/mysql_utils');
 
 const ormDef = {
-    label: 'Users',
-    table: 'users',
-    id_field: 'user_id',
+    label: 'Settlement',
+    table: 'settlements',
+    id_field: 'settlement_id',
     insert_fields: [
         {
-            id: 'email_address',
+            id: 'name',
             quoted: true
         },
         {
-            id: 'password',
+            id: 'hex',
             quoted: true
         },
         {
-            id: 'username',
+            id: 'sub_hex',
             quoted: true
+        },
+        {
+            id: 'population',
+            quoted: false
+        },
+        {
+            id: 'category',
+            quoted: true
+        },
+        {
+            id: 'map_id',
+            quoted: false
         }
     ]
 }
 
-async function getUsers() {
+async function getRecords() {
+    console.log('entering getRecords');
     const connection = await mysql.connection();
     try {
-        console.log('entering getUsers');
-
-        let userList = await connection.query('select user_id, username, email_address from oseitu.users');
-
-        return userList;
+        const sql = `SELECT * FROM ${ormDef.table}`
+        console.log(`DEBUG: getRecords SQL: ${sql}`)
+        let recordList = await connection.query(sql);
+        return recordList;
     } catch(err) {
         throw err;
     } finally {
@@ -35,49 +47,24 @@ async function getUsers() {
     }
 }
 
-async function getUser(email_address) {
+async function addRecord(data) {
+    console.log('addRecord data: ', data);
     const connection = await mysql.connection();
     try {
-        console.log('entering getUser:', email_address);
-
-        let userList = await connection.query(`select user_id, username, email_address from oseitu.users where email_address = '${email_address}'`);
-
-        return userList[0];
-    } catch(err) {
-        throw err;
-    } finally {
-        await connection.release();
-    }
-}
-
-async function verifyUser(email_address, password) {
-
-    const connection = await mysql.connection();
-    try {
-        console.log('verifying login for: ', email_address);
-
-        const sql = `SELECT user_id, username, email_address FROM users WHERE email_address = '${email_address}' AND password = '${password}'`;
-
-        let userResult = await connection.query(sql);
-
-        console.log('Result from verifying user: ', userResult);
-
-        return userResult;
-    } catch (err) {
-        throw err;
-    } finally {
-        await connection.release();
-    }
-}
-
-async function addUser(data) {
-    console.log('addUser data: ', data);
-    const connection = await mysql.connection();
-    try {
-        const sql = `INSERT INTO oseitu.users (email_address, username, password) values ('${data.email_address}', '${data.username}', '${data.password}')`;
-        console.log(`addUser SQL: ${sql}`);
+        let columns = []
+        let values = []
+        ormDef.insert_fields.forEach(field => {
+            columns.push(field.id)
+            if (field.quoted) {
+                values.push(`'${data[field.id]}'`)
+            } else {
+                values.push(`${data[field.id]}`)
+            }
+        })
+        const sql = `INSERT INTO ${ormDef.table} (${columns.join(', ')}) VALUES (${values.join(', ')})`;
+        console.log(`DEBUG: addRecord SQL: ${sql}`)
         let response = await connection.query(sql);
-        return `User ${data.email_address} added to database.`;
+        return `${ormDef.table} ${data.name} added to database.`;
     } catch (err) {
         throw err
     } finally {
@@ -85,18 +72,7 @@ async function addUser(data) {
     }
 }
 
-async function getUserRoles() {
-    const sql = 'SELECT u.username, ur.role FROM users u, user_roles ur WHERE u.user_id = ur.user_id;';
-    try {
-        let response = await connection.query(sql);
-        console.log('ss');
-    } catch (err) {
-        console.error('dd');
-    }
-}
-
-
-async function deleteUser(data) {
+async function deleteRecord(data) {
     console.log('deleteRecord data: ', data);
     const connection = await mysql.connection();
     try {
@@ -117,7 +93,7 @@ async function deleteUser(data) {
 }
 
 
-async function updateUser(record_id, data) {
+async function updateRecord(record_id, data) {
     console.log(`updateRecord (${record_id}) data: `, data);
     const connection = await mysql.connection();
     try {
@@ -150,4 +126,11 @@ async function updateUser(record_id, data) {
         await connection.release();
     }
 }
-module.exports = { getUsers, addUser, verifyUser, deleteUser, updateUser };
+
+const handler = {
+    getRecords: getRecords,
+    addRecord: addRecord,
+    deleteRecord: deleteRecord,
+    updateRecord: updateRecord
+};
+module.exports = handler;
