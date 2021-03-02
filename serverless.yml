@@ -63,3 +63,7 @@ functions:
               - Accept
               - Access-Control-Allow-Headers
             allowCredentials: true
+      - http:
+          path: /logout
+          method: POST
+          cors: true

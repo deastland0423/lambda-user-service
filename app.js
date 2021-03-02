@@ -4,6 +4,10 @@ const app = express();
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+const LOGIN_SESSION_COOKIE_NAME = 'oseitu_sessid';
+const { createLoginSession, getLoginSession, deleteLoginSession, LOGIN_SESSION_EXPIRATION_SEC } = require('./src/models/loginSessions');
 const { getUsers, addUser, verifyUser, deleteUser, updateUser } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
 const locationHandler = require('./src/models/locations');
@@ -28,6 +32,31 @@ app.use( (req, res, next) => {
   }
   next();
 });
+
+app.use( (req, res, next) => {
+  /* authenticated routes - how?
+  TODO:
+  - define restricted routes
+  - if incoming request matches a restricted route, then
+    // user is authenticated (does have a valid login session)
+  - check perms next
+  ...
+  */
+  console.log(`Looking for cookie with name ${LOGIN_SESSION_COOKIE_NAME}`)
+  const login_session_id = req.cookies[LOGIN_SESSION_COOKIE_NAME];
+  console.log(`Cookie value is '${login_session_id}'`)
+  let loginSession = null;
+  if (login_session_id) {
+    loginSession = getLoginSession(login_session_id)
+  }
+  if (loginSession) {
+    console.log("Found login Session:",loginSession)
+  } else {
+    console.log("TODO: no login session found")
+  }
+  next();
+});
+
 
 
 // Routing all Users queries
@@ -76,18 +105,28 @@ app
 
 app
   .post('/login', async (req, res) => {
-
     try {
-      
       const email_address = req.body.email_address;
       const password = req.body.password;
-
       console.log('INCOMING BODY: ', req.body);
-
       let results = await verifyUser(email_address, password);
-
       if (Array.isArray(results) && results.length) {
-        res.status(200).send(results[0]);
+        const user = results[0]
+        // Login attempt successful, create login session.
+        const loginSession = await createLoginSession(user.user_id);
+        // Return logged-in user record, and set client-side cookie w/ session ID.
+        console.log("response from createLoginSession",loginSession)
+        res.status(200)
+          .cookie(LOGIN_SESSION_COOKIE_NAME, loginSession.login_session_uuid, {
+            maxAge: loginSession.max_age*1000,
+            httpOnly: true,
+            //TODO: re-enable these when we lock down security/hosting
+            //secure: true,
+            //sameSite: true,
+          })
+          .send({
+            user: user
+          });
       } else {
         res.status(401).send( { message: 'User login failed.'});
       }
@@ -96,7 +135,22 @@ app
   } catch(err) {
       res.status(401).send( { message: err.message, error: err})
     }
-  });
+  })
+
+  .post('/logout', async (req, res) => {
+    try {
+      const login_session_id = req.cookies[LOGIN_SESSION_COOKIE_NAME];
+      console.log('Login session ID (from cookie): ', login_session_id);
+      let result = await deleteLoginSession(login_session_id);
+      res.status(204)
+        .clearCookie(LOGIN_SESSION_COOKIE_NAME)
+        .send();
+    } catch(err) {
+      res.status(401).send( { message: err.message, error: err})
+    }
+  })
+;
+
 
 // Genericized CRUD operation for backend data tablse
 function crudRoutes(entity_type, ormHandler) {
