@@ -16,16 +16,33 @@ const adventureHandler = require('./src/models/adventures');
 const characterHandler = require('./src/models/characters');
 const settlementHandler = require('./src/models/settlements');
 
+const ALLOWED_ORIGINS = [
+	'https://main.dmonfkjciylm6.amplifyapp.com',
+	'http://localhost:3000'
+];
+
+
 // This may also allow CORS. Have not tested yet.
 // const cors = require('cors');
 // app.use(cors());
 
 // Fix header to allow cross-origin
 app.use( (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://main.dmonfkjciylm6.amplifyapp.com');
-  res.header('Access-Control-Allow-Headers', "Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Headers, Authorization");
-  res.header('Access-Control-Allow-Methods', "GET, POST, OPTIONS, PUT, DELETE");
-  res.header('Access-Control-Allow-Credentials', 'true');
+  // Add CORS headers to response if request origin is allowed.
+  const requestOrigin = req.get('origin')
+  if (requestOrigin && ALLOWED_ORIGINS.includes(requestOrigin)) {
+    res.header('Access-Control-Allow-Origin', requestOrigin);
+    res.header('Access-Control-Allow-Headers', "Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Headers, Authorization");
+    res.header('Access-Control-Allow-Methods', "GET, POST, OPTIONS, PUT, DELETE");
+    res.header('Access-Control-Allow-Credentials', 'true');
+  } else {
+    if (requestOrigin) {
+      console.log(`Request origin '${requestOrigin}' not in ALLOWED_ORIGINS`);
+    } else {
+      console.log("DEBUG: request origin not set.")
+    }
+  }
+  // Add support for CORS preflight checks.
   if(req.method == "OPTIONS") {
     res.status(204).send();
     return
