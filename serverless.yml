@@ -1,4 +1,4 @@
-service: lambda-user-service
+service: adventure-time-data-service
 
 provider:
   name: aws
@@ -53,4 +53,13 @@ functions:
       - http:
           path: /login
           method: POST
-          cors: true
+          cors: 
+            origin: '*'
+            headers:
+              - Origin
+              - X-Requested-With
+              - Content-Type
+              - Authorization
+              - Accept
+              - Access-Control-Allow-Headers
+            allowCredentials: true
