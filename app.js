@@ -118,7 +118,7 @@ app
         console.log("response from createLoginSession",loginSession)
         res.status(200)
           .cookie(LOGIN_SESSION_COOKIE_NAME, loginSession.login_session_uuid, {
-            maxAge: loginSession.max_age,
+            maxAge: loginSession.max_age*1000,
             httpOnly: true,
             //TODO: re-enable these when we lock down security/hosting
             //secure: true,
