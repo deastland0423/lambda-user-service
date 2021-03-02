@@ -113,8 +113,9 @@ app
       if (Array.isArray(results) && results.length) {
         const user = results[0]
         // Login attempt successful, create login session.
-        const loginSession = createLoginSession(user.user_id);
+        const loginSession = await createLoginSession(user.user_id);
         // Return logged-in user record, and set client-side cookie w/ session ID.
+        console.log("response from createLoginSession",loginSession)
         res.status(200)
           .cookie(LOGIN_SESSION_COOKIE_NAME, loginSession.login_session_uuid, {
             maxAge: loginSession.max_age,

@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS `locations` (
 CREATE TABLE IF NOT EXISTS `login_sessions` (
   `login_session_uuid` CHAR(36) NOT NULL,
   `user_id` int NOT NULL,
-  `expires_at` timestamp NOT NULL,
+  `expires_at` int NOT NULL,
   PRIMARY KEY (`login_session_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Tracks active login sessions for web app users.';
 

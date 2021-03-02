@@ -1,4 +1,4 @@
-const uuid = require('uuid');
+const { v4: uuid } = require('uuid');
 const mysql = require('../utils/mysql_utils');
 const LOGIN_SESSION_EXPIRATION_SEC = 86400;
 
@@ -38,7 +38,7 @@ async function createLoginSession(user_id) {
     try {
         const new_expiration = Math.floor(Date.now() / 1000) + LOGIN_SESSION_EXPIRATION_SEC;
         const session_uuid = uuid();
-        const sql = `INSERT INTO login_sessions (login_session_uuid, user_id, expires_at) values ('${session_uuid}', '${user_id}', '${new_expiration}')`;
+        const sql = `INSERT INTO login_sessions (login_session_uuid, user_id, expires_at) values ('${session_uuid}', ${user_id}, ${new_expiration})`;
         console.log(`createLoginSession SQL: ${sql}`);
         let response = await connection.query(sql);
         return {login_session_uuid: session_uuid, max_age: LOGIN_SESSION_EXPIRATION_SEC};
