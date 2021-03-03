@@ -27,9 +27,11 @@ functions:
       - http:
           path: /users
           method: ANY
+          cors: ${self:custom.cors}
       - http:
           path: /user/{id}
           method: ANY
+          cors: ${self:custom.cors}
       - http:
           path: /roles
           method: GET
