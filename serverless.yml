@@ -6,6 +6,20 @@ provider:
   stage: dev
   region: us-east-1
 
+custom:
+  cors:
+    origins:
+      - https://main.dmonfkjciylm6.amplifyapp.com
+      - http://localhost:3000
+    headers:
+      - Origin
+      - X-Requested-With
+      - Content-Type
+      - Authorization
+      - Accept
+      - Access-Control-Allow-Headers
+    allowCredentials: true
+
 functions:
   app:
     handler: app.server
@@ -13,57 +27,70 @@ functions:
       - http:
           path: /users
           method: ANY
-          cors: true
+      - http:
+          path: /user/{id}
+          method: ANY
       - http:
           path: /roles
           method: GET
-          cors: true
+          cors: ${self:custom.cors}
       - http:
           path: /locations
           method: ANY
-          cors: true
+          cors: ${self:custom.cors}
+      - http:
+          path: /location/{id}
+          method: ANY
+          cors: ${self:custom.cors}
       - http:
           path: /characters
           method: ANY
-          cors: true
+          cors: ${self:custom.cors}
+      - http:
+          path: /character/{id}
+          method: ANY
+          cors: ${self:custom.cors}
       - http:
           path: /characters/view
           method: GET
-          cors: true
+          cors: ${self:custom.cors}
       - http:
           path: /sessions
           method: ANY
-          cors: true
+          cors: ${self:custom.cors}
+      - http:
+          path: /session/{id}
+          method: ANY
+          cors: ${self:custom.cors}
       - http:
           path: /sessions/view
           method: GET
-          cors: true
+          cors: ${self:custom.cors}
       - http:
           path: /adventures
           method: ANY
-          cors: true
+          cors: ${self:custom.cors}
+      - http:
+          path: /adventure/{id}
+          method: ANY
+          cors: ${self:custom.cors}
       - http:
           path: /adventures/view
           method: GET
-          cors: true
+          cors: ${self:custom.cors}
       - http:
           path: /settlements
           method: ANY
-          cors: true
+          cors: ${self:custom.cors}
+      - http:
+          path: /settlement/{id}
+          method: ANY
+          cors: ${self:custom.cors}
       - http:
           path: /login
           method: POST
-          cors: 
-            origin: '*'
-            headers:
-              - Origin
-              - X-Requested-With
-              - Content-Type
-              - Authorization
-              - Accept
-              - Access-Control-Allow-Headers
-            allowCredentials: true
+          cors: ${self:custom.cors}
       - http:
           path: /logout
           method: POST
-          cors: true
+          cors: ${self:custom.cors}

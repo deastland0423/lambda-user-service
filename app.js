@@ -137,9 +137,9 @@ app
           .cookie(LOGIN_SESSION_COOKIE_NAME, loginSession.login_session_uuid, {
             maxAge: loginSession.max_age*1000,
             httpOnly: true,
-            //TODO: re-enable these when we lock down security/hosting
-            //secure: true,
-            //sameSite: true,
+            secure: true,
+            //TODO: switch sameSite to true when we lock down deployment environment security/hosting
+            sameSite: 'none'
           })
           .send({
             user: user
