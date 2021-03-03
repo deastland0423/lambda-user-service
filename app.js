@@ -64,14 +64,19 @@ app.use( (req, res, next) => {
   console.log(`Cookie value is '${login_session_id}'`)
   let loginSession = null;
   if (login_session_id) {
-    loginSession = getLoginSession(login_session_id)
-  }
-  if (loginSession) {
-    console.log("Found login Session:",loginSession)
+    getLoginSession(login_session_id)
+    .then( loginSession => {
+        console.log("Found login Session:",loginSession)
+        next();
+      })
+    .catch( error => {
+      console.log("DEBUG: no login session found")
+      next();
+    })
   } else {
-    console.log("TODO: no login session found")
+    console.log("DEBUG: no login_session_id found")
+    next();
   }
-  next();
 });
 
 
