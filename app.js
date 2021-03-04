@@ -21,10 +21,19 @@ const ALLOWED_ORIGINS = [
 	'http://localhost:3000'
 ];
 
-
-// This may also allow CORS. Have not tested yet.
-// const cors = require('cors');
-// app.use(cors());
+// Default implementation for cookie params assuming BE is deployed to lambda (sameSite NO, secure YES).
+if (typeof app.locals === 'undefined') {
+  app.locals = {};
+}
+app.locals.getCookieParams = function(loginSession) {
+  return {
+    maxAge: loginSession.max_age*1000,
+    httpOnly: true,
+    secure: true,
+    //TODO: switch sameSite to true if/when front-end and back-end are on the same domain
+    sameSite: 'none'
+  };
+}
 
 // Fix header to allow cross-origin
 app.use( (req, res, next) => {
@@ -138,14 +147,9 @@ app
         const loginSession = await createLoginSession(user.user_id);
         // Return logged-in user record, and set client-side cookie w/ session ID.
         console.log("response from createLoginSession",loginSession)
+        const cookieParams = app.locals.getCookieParams(loginSession);
         res.status(200)
-          .cookie(LOGIN_SESSION_COOKIE_NAME, loginSession.login_session_uuid, {
-            maxAge: loginSession.max_age*1000,
-            httpOnly: true,
-            secure: true,
-            //TODO: switch sameSite to true when we lock down deployment environment security/hosting
-            sameSite: 'none'
-          })
+          .cookie(LOGIN_SESSION_COOKIE_NAME, loginSession.login_session_uuid, cookieParams)
           .send({
             user: user
           });
