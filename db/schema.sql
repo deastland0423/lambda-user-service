@@ -17,12 +17,12 @@ CREATE TABLE IF NOT EXISTS `adventures` (
   `adventure_id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(250) NOT NULL,
   `session_id` int NOT NULL DEFAULT '0',
-  `location_d` int NOT NULL DEFAULT '0',
+  `location_id` int NOT NULL DEFAULT '0',
   `character_count` int NOT NULL DEFAULT '0' COMMENT 'Number of characters currently signed up',
   PRIMARY KEY (`adventure_id`),
   KEY `adventures_session_id_sessions_session_id` (`session_id`),
-  KEY `adventures_location_id_locations_location_id` (`location_d`),
-  CONSTRAINT `adventures_location_id_locations_location_id` FOREIGN KEY (`location_d`) REFERENCES `locations` (`location_id`),
+  KEY `adventures_location_id_locations_location_id` (`location_id`),
+  CONSTRAINT `adventures_location_id_locations_location_id` FOREIGN KEY (`location_id`) REFERENCES `locations` (`location_id`),
   CONSTRAINT `adventures_session_id_sessions_session_id` FOREIGN KEY (`session_id`) REFERENCES `sessions` (`session_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='An adventure is a reservation of a session at a given location, with a number of characters.';
 
