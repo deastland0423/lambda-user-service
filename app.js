@@ -8,7 +8,7 @@ const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 const LOGIN_SESSION_COOKIE_NAME = 'oseitu_sessid';
 const { createLoginSession, getLoginSession, deleteLoginSession, LOGIN_SESSION_EXPIRATION_SEC } = require('./src/models/loginSessions');
-const { getUsers, addUser, verifyUser, deleteUser, updateUser } = require('./src/models/users');
+const { getUsers, getUser, addUser, verifyUser, deleteUser, updateUser } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
 const locationHandler = require('./src/models/locations');
 const sessionHandler = require('./src/models/sessions');
@@ -76,10 +76,14 @@ app.use( (req, res, next) => {
     getLoginSession(login_session_id)
     .then( loginSession => {
         console.log("Found login Session:",loginSession)
+        if (!('locals' in req)) {
+          req.locals = {};
+        }
+        req.locals.loginSession = loginSession
         next();
       })
     .catch( error => {
-      console.log("DEBUG: no login session found")
+      console.log("DEBUG: no login session found: ",error)
       next();
     })
   } else {
@@ -139,7 +143,7 @@ app
     try {
       const email_address = req.body.email_address;
       const password = req.body.password;
-      console.log('INCOMING BODY: ', req.body);
+      console.log('POST /login body: ', req.body);
       let results = await verifyUser(email_address, password);
       if (Array.isArray(results) && results.length) {
         const user = results[0]
@@ -156,13 +160,32 @@ app
       } else {
         res.status(401).send( { message: 'User login failed.'});
       }
-
-
   } catch(err) {
       res.status(401).send( { message: err.message, error: err})
     }
   })
-
+  .get('/login', async (req, res) => {
+    // GET /login checks existing cookie for a valid session
+    try {
+      console.log("entering GET /login, req.locals=",req.locals)
+      if (req.locals && 'loginSession' in req.locals && typeof req.locals.loginSession !== "undefined") {
+        const loginSession = req.locals.loginSession;
+        console.log("GET /login - found loginSession",loginSession)
+        const user = await getUser(loginSession.user_id);
+        // Return logged-in user record, and set client-side cookie w/ session ID.
+        const cookieParams = app.locals.getCookieParams(loginSession);
+        res.status(200)
+          .cookie(LOGIN_SESSION_COOKIE_NAME, loginSession.login_session_uuid, cookieParams)
+          .send({
+            user: user
+          });
+      } else {
+        res.status(404).send( { message: 'No current user session was found.'});
+      }
+    } catch(err) {
+      res.status(401).send( { message: err.message, error: err})
+    }
+  })
   .post('/logout', async (req, res) => {
     try {
       const login_session_id = req.cookies[LOGIN_SESSION_COOKIE_NAME];

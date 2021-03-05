@@ -35,13 +35,11 @@ async function getUsers() {
     }
 }
 
-async function getUser(email_address) {
+async function getUser(user_id) {
     const connection = await mysql.connection();
     try {
-        console.log('entering getUser:', email_address);
-
-        let userList = await connection.query(`select user_id, username, email_address from oseitu.users where email_address = '${email_address}'`);
-
+        console.log(`entering getUser(${user_id})`);
+        let userList = await connection.query(`select user_id, username, email_address from oseitu.users where user_id = ${user_id}`);
         return userList[0];
     } catch(err) {
         throw err;
@@ -150,4 +148,4 @@ async function updateUser(record_id, data) {
         await connection.release();
     }
 }
-module.exports = { getUsers, addUser, verifyUser, deleteUser, updateUser };
+module.exports = { getUsers, getUser, addUser, verifyUser, deleteUser, updateUser };

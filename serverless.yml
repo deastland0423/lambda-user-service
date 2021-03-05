@@ -93,6 +93,10 @@ functions:
           method: POST
           cors: ${self:custom.cors}
       - http:
+          path: /login
+          method: GET
+          cors: ${self:custom.cors}
+      - http:
           path: /logout
           method: POST
           cors: ${self:custom.cors}
