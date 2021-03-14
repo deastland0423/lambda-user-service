@@ -20,31 +20,35 @@ const ormDef = {
     ]
 }
 
+function _combineRoles(userList) {
+    // join roles together
+    let combinedUserList = {};
+    userList.forEach((item) => {
+      const pojo = Object.fromEntries(Object.entries(item));
+      console.log(`adding for key ${item.user_id}`, pojo)
+        if (item.user_id in combinedUserList) {
+          if (pojo.roles) {
+            combinedUserList[item.user_id].roles.push(pojo.roles);
+          }
+        } else {
+          combinedUserList[item.user_id] = pojo;
+          if (pojo.roles) {
+            combinedUserList[item.user_id].roles = [pojo.roles];
+          } else {
+            combinedUserList[item.user_id].roles = []
+          }
+        }
+        console.log(`resulting combinedlist`, combinedUserList)
+    });
+    return Object.values(combinedUserList);
+}
+
 async function getUsers() {
     const connection = await mysql.connection();
     try {
         console.log('entering getUsers');
-        let combinedUserList = {};
         const userList = await connection.query('SELECT users.user_id, username, email_address, role as roles FROM users LEFT JOIN user_roles ON users.user_id = user_roles.user_id;');
-        // join roles together
-        userList.forEach((item) => {
-          const pojo = Object.fromEntries(Object.entries(item));
-          console.log(`adding for key ${item.user_id}`, pojo)
-            if (item.user_id in combinedUserList) {
-              if (pojo.roles) {
-                combinedUserList[item.user_id].roles.push(pojo.roles);
-              }
-            } else {
-              combinedUserList[item.user_id] = pojo;
-              if (pojo.roles) {
-                combinedUserList[item.user_id].roles = [pojo.roles];
-              } else {
-                combinedUserList[item.user_id].roles = []
-              }
-            }
-            console.log(`resulting combinedlist`, combinedUserList)
-        });
-        return Object.values(combinedUserList);
+        return _combineRoles(userList);
     } catch(err) {
         throw err;
     } finally {
@@ -56,8 +60,9 @@ async function getUser(user_id) {
     const connection = await mysql.connection();
     try {
         console.log(`entering getUser(${user_id})`);
-        let userList = await connection.query(`select user_id, username, email_address from oseitu.users where user_id = ${user_id}`);
-        return userList[0];
+        const userList = await connection.query(`select users.user_id, username, email_address, role as roles FROM users LEFT JOIN user_roles ON users.user_id = user_roles.user_id WHERE users.user_id = ${user_id}`);
+        const combinedUserList = _combineRoles(userList);
+        return combinedUserList[0];
     } catch(err) {
         throw err;
     } finally {

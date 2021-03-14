@@ -65,7 +65,7 @@ async function addRecord(data) {
             if (field.quoted) {
                 values.push(`'${data[field.id]}'`)
             } else {
-                values.push(`${data[field.id]}`)
+                values.push(`${Number(data[field.id])}`)
             }
         })
         const sql = `INSERT INTO ${ormDef.table} (${columns.join(', ')}) VALUES (${values.join(', ')})`;
