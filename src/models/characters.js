@@ -1,3 +1,4 @@
+const mysql = require('../utils/mysql_utils');
 const ModelBase = require('./ModelBase');
 
 const ormDef = {

@@ -24,8 +24,7 @@ function _combineRoles(userList) {
     // join roles together
     let combinedUserList = {};
     userList.forEach((item) => {
-      const pojo = Object.fromEntries(Object.entries(item));
-      console.log(`adding for key ${item.user_id}`, pojo)
+        const pojo = Object.fromEntries(Object.entries(item));
         if (item.user_id in combinedUserList) {
           if (pojo.roles) {
             combinedUserList[item.user_id].roles.push(pojo.roles);
@@ -38,7 +37,6 @@ function _combineRoles(userList) {
             combinedUserList[item.user_id].roles = []
           }
         }
-        console.log(`resulting combinedlist`, combinedUserList)
     });
     return Object.values(combinedUserList);
 }
