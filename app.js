@@ -6,6 +6,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
+const { safeGetProp } = require('./src/utils/data_access');
 const LOGIN_SESSION_COOKIE_NAME = 'oseitu_sessid';
 const { createLoginSession, getLoginSession, deleteLoginSession, LOGIN_SESSION_EXPIRATION_SEC } = require('./src/models/loginSessions');
 const { getUsers, getUser, addUser, verifyUser, deleteUser, updateUser } = require('./src/models/users');
@@ -60,14 +61,6 @@ app.use( (req, res, next) => {
 });
 
 app.use( (req, res, next) => {
-  /* authenticated routes - how?
-  TODO:
-  - define restricted routes
-  - if incoming request matches a restricted route, then
-    // user is authenticated (does have a valid login session)
-  - check perms next
-  ...
-  */
   console.log(`Looking for cookie with name ${LOGIN_SESSION_COOKIE_NAME}`)
   const login_session_id = req.cookies[LOGIN_SESSION_COOKIE_NAME];
   console.log(`Cookie value is '${login_session_id}'`)
@@ -80,7 +73,17 @@ app.use( (req, res, next) => {
           req.locals = {};
         }
         req.locals.loginSession = loginSession
-        next();
+        // Load up user record into request locals for access checks.
+        getUser(loginSession.user_id)
+        .then( user => {
+            console.log(`DEBUG: Loaded currentUser from user #${loginSession.user_id}: ${user.username}`)
+            req.locals.currentUser = user;
+            next();
+        })
+        .catch( error => {
+            console.log(`WARNING: Could not load user #${loginSession.user_id} for loginSession ${login_session_id}`);
+            next();
+        })
       })
     .catch( error => {
       console.log("DEBUG: no login session found: ",error)
@@ -92,6 +95,62 @@ app.use( (req, res, next) => {
   }
 });
 
+
+const locationAccess = {
+  'POST /locations': (req) => (['DM','ADMIN'].some(role => safeGetProp(req, ['locals', 'currentUser', 'roles']).includes(role))),
+  'GET /locations': (req) => true,
+  'PUT /location/([0-9]+)': (req) => (safeGetProp(req, ['locals', 'currentUser', 'roles']).includes('ADMIN')),
+  'DELETE /location/([0-9]+)': (req) => (safeGetProp(req, ['locals', 'currentUser', 'roles']).includes('ADMIN'))
+}
+
+
+class RestrictedRoutes {
+  constructor() {
+    this.routes = {};
+  }
+  addRoutes(routeDefs) {
+    this.routes = {...this.routes, ...routeDefs}
+  }
+  getAccessCheck(req) {
+    let result = null;
+    Object.entries(this.routes).forEach(([endpointSig, accessCheck]) => {
+      const [method, url] = endpointSig.split(' ');
+      if (req.method === method && req.url.match(new RegExp('^'+url))) {
+        result = accessCheck;
+      }
+    });
+    return result;
+  }
+}
+const restrictedRoutes = new RestrictedRoutes();
+restrictedRoutes.addRoutes(locationAccess);
+
+
+// Check authorization for restricted routes.
+app.use( (req, res, next) => {
+    console.log(`AUTH: Checking restricted routes for ${req.method} request to ${req.url}`);
+    // match incoming URL to known. routes
+    const accessCheck = restrictedRoutes.getAccessCheck(req);
+    //if a match is found, check for restrictions
+    if (accessCheck) {
+      //if restrictions are found, check current user's access
+      const user = safeGetProp(req, ['locals', 'currentUser']);
+      console.log(`DEBUG: Route is restricted, checking access for current user with roles: (${user ? user.roles : '<none>'})...`);
+      const accessCheckResult = accessCheck(req);
+      if (accessCheckResult !== true) {
+        //if user does not have access, return 403 acces denied error
+        console.log("AUTH: Access check failed with result: ",accessCheckResult);
+        res.status(403).send('Access Denied');
+        return;
+      } else {
+        console.log("DEBUG: Access check passed.");
+        next();
+      }
+    } else {
+      console.log("DEBUG: Route not restricted.")
+      next();
+    }
+});
 
 
 // Routing all Users queries
@@ -201,7 +260,7 @@ app
 ;
 
 
-// Genericized CRUD operation for backend data tablse
+// Genericized CRUD operation for backend data tables
 function crudRoutes(entity_type, ormHandler) {
   //TODO: move these to entityDef & share w/ front-end
   const entity_type_plural = entity_type + 's';
