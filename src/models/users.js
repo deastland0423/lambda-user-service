@@ -69,18 +69,15 @@ async function getUser(user_id) {
 }
 
 async function verifyUser(email_address, password) {
-
     const connection = await mysql.connection();
     try {
         console.log('verifying login for: ', email_address);
-
-        const sql = `SELECT user_id, username, email_address FROM users WHERE email_address = '${email_address}' AND password = '${password}'`;
-
+        const sql = `SELECT users.user_id, username, email_address, role as roles FROM users LEFT JOIN user_roles ON users.user_id = user_roles.user_id WHERE email_address = '${email_address}' AND password = '${password}'`;
         let userResult = await connection.query(sql);
-
-        console.log('Result from verifying user: ', userResult);
-
-        return userResult;
+        console.log('Raw result from verifying user: ', userResult);
+        const combinedUserResult = _combineRoles(userResult);
+        console.log('Combined result from verifying user: ', combinedUserResult);
+        return combinedUserResult;
     } catch (err) {
         throw err;
     } finally {
