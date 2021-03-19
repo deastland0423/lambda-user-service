@@ -1,6 +1,6 @@
 const { v4: uuid } = require('uuid');
 const mysql = require('../utils/mysql_utils');
-const LOGIN_SESSION_EXPIRATION_SEC = 86400;
+const LOGIN_SESSION_EXPIRATION_SEC = 86400*30;
 
 async function getLoginSession(session_id) {
     const connection = await mysql.connection();
