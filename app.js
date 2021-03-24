@@ -180,6 +180,14 @@ app.route(`/user/:user_id`)
 })
 .put(async (req, res) => {
   try {
+    // Check field-level perms...
+    //admin can change roles or user details for anyone, but otherwise a regular user should only be able to update their own details, and not their roles.
+    const currentRoles = safeGetProp(req, ['locals', 'currentUser', 'roles']) || [];
+    if (!currentRoles.includes('ADMIN')) {
+      delete req.body.is_admin;
+      delete req.body.is_dm;
+      delete req.body.is_player;
+    }
     let results = await updateUser(req.params.user_id, req.body);
     res.status(200).send(results);
   } catch(err) {

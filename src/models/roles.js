@@ -16,4 +16,61 @@ async function getRoles() {
     }
 }
 
-module.exports = { getRoles };
+async function hasRole(user_id, role_name) {
+  const connection = await mysql.connection();
+  try {
+      const sql = `SELECT COUNT(*) AS has_role FROM user_roles WHERE user_id = ${user_id} AND role = '${role_name}'`
+      const response = await connection.query(sql);
+      return response[0].has_role;
+  } catch(err) {
+      throw err;
+  } finally {
+      await connection.release();
+  }
+}
+
+async function removeRole(user_id, role_name) {
+  const connection = await mysql.connection();
+  try {
+      console.log(`entering removeRole(${user_id}, ${role_name})`);
+      const sql = `DELETE FROM user_roles WHERE user_id = ${user_id} AND role = '${role_name}'`
+      const row = await connection.query(sql);
+      const response = await connection.query(sql);
+      return response.affectedRows;
+  } catch(err) {
+      throw err;
+  } finally {
+      await connection.release();
+  }
+}
+
+async function addRole(user_id, role_name) {
+  const connection = await mysql.connection();
+  try {
+      console.log(`entering addRole(${user_id}, ${role_name})`);
+      const sql = `INSERT INTO user_roles (user_id, role) VALUES(${user_id}, '${role_name}')`
+      const response = await connection.query(sql);
+      return response.affectedRows;
+  } catch(err) {
+      throw err;
+  } finally {
+      await connection.release();
+  }
+}
+
+
+/**
+ * Return true if user roles were changed.
+ */
+async function ensureRole(user_id, role_name, should_have_role) {
+  let changed = false;
+  const has_role = await hasRole(user_id, role_name);
+  if (has_role && !should_have_role) {
+    await removeRole(user_id, role_name);
+  } else if (!has_role && should_have_role) {
+    await addRole(user_id, role_name);
+  }
+  return changed;
+}
+
+module.exports = { getRoles, ensureRole };

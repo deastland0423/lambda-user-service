@@ -1,4 +1,5 @@
 const mysql = require('../utils/mysql_utils');
+const { ensureRole } = require('./roles');
 
 const ormDef = {
     label: 'Users',
@@ -136,6 +137,7 @@ async function updateUser(record_id, data) {
     console.log(`updateRecord (${record_id}) data: `, data);
     const connection = await mysql.connection();
     try {
+        let changed = false;
         let fieldUpdates = [];
         ormDef.insert_fields.forEach(field => {
             if (field.id in data) {
@@ -152,14 +154,19 @@ async function updateUser(record_id, data) {
         const setSql = fieldUpdates.join(', ')
         const sql = `UPDATE ${ormDef.table} SET ${setSql} WHERE ${ormDef.id_field} = ${record_id}`;
         console.log(`entering updateRecord: sql=${sql}`);
-        let response = await connection.query(sql);
-        if(response.affectedRows) {
+        const response = await connection.query(sql);
+        changed = (response.changedRows > 0)
+          || await ensureRole(record_id, 'PLAYER', data.is_player)
+          || await ensureRole(record_id, 'DM', data.is_dm)
+          || await ensureRole(record_id, 'ADMIN', data.is_admin);
+        if (changed) {
             result = 'was updated'
         } else {
             result = 'had no changes'
         }
         return `${ormDef.table} ${record_id} ${result}.`;
     } catch (err) {
+        console.log(err)
         throw err
     } finally {
         await connection.release();
