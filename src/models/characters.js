@@ -25,6 +25,10 @@ const ormDef = {
         {
             id: 'home_base_settlement_id',
             quoted: false
+        },
+        {
+            id: 'owner_user_id',
+            quoted: false
         }
     ],
     access: {
