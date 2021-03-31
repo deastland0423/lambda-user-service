@@ -25,6 +25,10 @@ functions:
     handler: app.server
     events:
       - http:
+          path: /access-rules
+          method: GET
+          cors: ${self:custom.cors}
+      - http:
           path: /users
           method: ANY
           cors: ${self:custom.cors}

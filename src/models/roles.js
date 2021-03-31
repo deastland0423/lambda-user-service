@@ -34,7 +34,6 @@ async function removeRole(user_id, role_name) {
   try {
       console.log(`entering removeRole(${user_id}, ${role_name})`);
       const sql = `DELETE FROM user_roles WHERE user_id = ${user_id} AND role = '${role_name}'`
-      const row = await connection.query(sql);
       const response = await connection.query(sql);
       return response.affectedRows;
   } catch(err) {
@@ -66,9 +65,9 @@ async function ensureRole(user_id, role_name, should_have_role) {
   let changed = false;
   const has_role = await hasRole(user_id, role_name);
   if (has_role && !should_have_role) {
-    await removeRole(user_id, role_name);
+    changed = await removeRole(user_id, role_name);
   } else if (!has_role && should_have_role) {
-    await addRole(user_id, role_name);
+    changed = await addRole(user_id, role_name);
   }
   return changed;
 }

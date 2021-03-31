@@ -8,8 +8,9 @@ const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 const { safeGetProp } = require('./src/utils/data_access');
 const LOGIN_SESSION_COOKIE_NAME = 'oseitu_sessid';
+const restrictedRoutes = require('./src/auth/RestrictedRoutes');
 const { createLoginSession, getLoginSession, deleteLoginSession, LOGIN_SESSION_EXPIRATION_SEC } = require('./src/models/loginSessions');
-const { getUsers, getUser, addUser, verifyUser, deleteUser, updateUser } = require('./src/models/users');
+const { getUsers, getUser, addUser, verifyUser, deleteUser, updateUser, userAccess } = require('./src/models/users');
 const { getRoles } = require('./src/models/roles');
 const locationHandler = require('./src/models/locations');
 const sessionHandler = require('./src/models/sessions');
@@ -21,6 +22,15 @@ const ALLOWED_ORIGINS = [
 	'https://main.dmonfkjciylm6.amplifyapp.com',
 	'http://localhost:3000'
 ];
+
+restrictedRoutes.addRoutes(userAccess);
+restrictedRoutes.addRoutes(adventureHandler.getAccess());
+restrictedRoutes.addRoutes(characterHandler.getAccess());
+restrictedRoutes.addRoutes(locationHandler.getAccess());
+restrictedRoutes.addRoutes(sessionHandler.getAccess());
+restrictedRoutes.addRoutes(settlementHandler.getAccess());
+
+const routes = restrictedRoutes.getRoutes();
 
 // Default implementation for cookie params assuming BE is deployed to lambda (sameSite NO, secure YES).
 if (typeof app.locals === 'undefined') {
@@ -96,36 +106,6 @@ app.use( (req, res, next) => {
 });
 
 
-const locationAccess = {
-  'POST /locations': (req) => (['DM','ADMIN'].some(role => safeGetProp(req, ['locals', 'currentUser', 'roles']).includes(role))),
-  'GET /locations': (req) => true,
-  'PUT /location/([0-9]+)': (req) => (safeGetProp(req, ['locals', 'currentUser', 'roles']).includes('ADMIN')),
-  'DELETE /location/([0-9]+)': (req) => (safeGetProp(req, ['locals', 'currentUser', 'roles']).includes('ADMIN'))
-}
-
-
-class RestrictedRoutes {
-  constructor() {
-    this.routes = {};
-  }
-  addRoutes(routeDefs) {
-    this.routes = {...this.routes, ...routeDefs}
-  }
-  getAccessCheck(req) {
-    let result = null;
-    Object.entries(this.routes).forEach(([endpointSig, accessCheck]) => {
-      const [method, url] = endpointSig.split(' ');
-      if (req.method === method && req.url.match(new RegExp('^'+url))) {
-        result = accessCheck;
-      }
-    });
-    return result;
-  }
-}
-const restrictedRoutes = new RestrictedRoutes();
-restrictedRoutes.addRoutes(locationAccess);
-
-
 // Check authorization for restricted routes.
 app.use( (req, res, next) => {
     console.log(`AUTH: Checking restricted routes for ${req.method} request to ${req.url}`);
@@ -136,6 +116,7 @@ app.use( (req, res, next) => {
       //if restrictions are found, check current user's access
       const user = safeGetProp(req, ['locals', 'currentUser']);
       console.log(`DEBUG: Route is restricted, checking access for current user with roles: (${user ? user.roles : '<none>'})...`);
+      req.locals.safeGetProp = safeGetProp;
       const accessCheckResult = accessCheck(req);
       if (accessCheckResult !== true) {
         //if user does not have access, return 403 acces denied error
@@ -150,6 +131,16 @@ app.use( (req, res, next) => {
       console.log("DEBUG: Route not restricted.")
       next();
     }
+});
+
+
+// Share access rules with FE for consistent enforcement.
+app.get('/access-rules', async (req, res, next) => {
+  let stringifiedRoutes = {};
+  Object.entries(restrictedRoutes.getRoutes()).forEach(([endpointSig, accessCheck]) => {
+    stringifiedRoutes[endpointSig] = accessCheck.toString();
+  });
+  res.status(200).send(stringifiedRoutes);
 });
 
 
@@ -188,7 +179,7 @@ app.route(`/user/:user_id`)
       delete req.body.is_dm;
       delete req.body.is_player;
     }
-    let results = await updateUser(req.params.user_id, req.body);
+    let results = await updateUser(req.params.user_id, req.body, currentRoles.includes('ADMIN'));
     res.status(200).send(results);
   } catch(err) {
     res.status(400).send(err.message);

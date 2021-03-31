@@ -26,7 +26,13 @@ const ormDef = {
             id: 'home_base_settlement_id',
             quoted: false
         }
-    ]
+    ],
+    access: {
+      'POST /characters': (req) => (['PLAYER','DM','ADMIN'].some(role => req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes(role))),
+      'GET /characters': (req) => true,
+      'PUT /character/([0-9]+)': (req) => req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes('ADMIN'),  // Only Admins can update for now
+      'DELETE /character/([0-9]+)': (req) => req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes('ADMIN')
+    }
 }
 
 const CharacterHandler = new ModelBase(ormDef);

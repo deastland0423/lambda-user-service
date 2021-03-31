@@ -29,7 +29,10 @@ const ormDef = {
             id: 'map_id',
             quoted: false
         }
-    ]
+    ],
+    access: {
+      //TODO
+    }
 }
 
 const SettlementHandler = new ModelBase(ormDef);

@@ -5,7 +5,7 @@
  * @param array path Sequence of property names defining the path to the desired property.
  * @return mixed|null Return the value or NULL if not found.
  */
-const safeGetProp = (obj, path) =>
-  path.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, obj)
+const safeGetProp = (obj, path, default_value = null) =>
+  path.reduce((xs, x) => (xs && xs[x]) ? xs[x] : default_value, obj)
 
 module.exports = { safeGetProp };

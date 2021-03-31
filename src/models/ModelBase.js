@@ -5,6 +5,9 @@ class ModelBase {
         this.ormDef = ormDef;
     }
 
+    getAccess() {
+      return this.ormDef.access;
+    }
 
     async getRecords() {
         console.log('entering getRecords');

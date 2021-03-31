@@ -22,7 +22,16 @@ const ormDef = {
         {
             id: 'reserved',
         }
-    ]
+    ],
+    access: {
+      'POST /sessions': (req) => (['DM','ADMIN'].some(role => req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes(role))),
+      'GET /sessions': (req) => true,
+      'PUT /session/([0-9]+)': (req) => (
+        req.locals.safeGetProp(req, ['locals', 'currentUser', 'user_id'], []) == req.locals.routeParams[0]  // Only same user
+        || req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes('ADMIN')  // Admins can update sessions
+      ),
+      'DELETE /session/([0-9]+)': (req) => (req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes('ADMIN'))
+    }
 }
 
 const SessionHandler = new ModelBase(ormDef);

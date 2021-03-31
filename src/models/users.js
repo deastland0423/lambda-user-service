@@ -133,7 +133,7 @@ async function deleteUser(data) {
 }
 
 
-async function updateUser(record_id, data) {
+async function updateUser(record_id, data, update_roles) {
     console.log(`updateRecord (${record_id}) data: `, data);
     const connection = await mysql.connection();
     try {
@@ -156,9 +156,11 @@ async function updateUser(record_id, data) {
         console.log(`entering updateRecord: sql=${sql}`);
         const response = await connection.query(sql);
         changed = (response.changedRows > 0)
-          || await ensureRole(record_id, 'PLAYER', data.is_player)
-          || await ensureRole(record_id, 'DM', data.is_dm)
-          || await ensureRole(record_id, 'ADMIN', data.is_admin);
+        if (update_roles) {
+          changed = await ensureRole(record_id, 'PLAYER', data.is_player) || changed;
+          changed = await ensureRole(record_id, 'DM', data.is_dm) || changed;
+          changed = await ensureRole(record_id, 'ADMIN', data.is_admin) || changed;
+        }
         if (changed) {
             result = 'was updated'
         } else {
@@ -172,4 +174,18 @@ async function updateUser(record_id, data) {
         await connection.release();
     }
 }
-module.exports = { getUsers, getUser, addUser, verifyUser, deleteUser, updateUser };
+
+const userAccess = {
+  'POST /users': (req) => (
+    !req.locals.safeGetProp(req, ['locals', 'currentUser'])  // Only anonymous users
+    || req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes('ADMIN') // or admins
+  ),
+  'GET /users': (req) => (!!req.locals.safeGetProp(req, ['locals', 'currentUser'])), // Only authenticated users
+  'PUT /user/([0-9]+)': (req) => (
+    req.locals.safeGetProp(req, ['locals', 'currentUser', 'user_id']) == req.locals.routeParams[0]  // Only same user
+    || req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes('ADMIN') // or admins
+  ),
+  'DELETE /user/([0-9]+)': (req) => req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes('ADMIN'),
+}
+
+module.exports = { getUsers, getUser, addUser, verifyUser, deleteUser, updateUser, userAccess };
