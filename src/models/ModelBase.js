@@ -5,6 +5,28 @@ class ModelBase {
         this.ormDef = ormDef;
     }
 
+    getWhere(params) {
+        let conditions = [];
+        let values = []
+        this.ormDef.insert_fields.forEach(field => {
+            if (!Object.keys(params).includes(field.id)) {
+                return;
+            }
+            let value;
+            if (field.quoted) {
+                value = `'${params[field.id]}'`;
+            } else {
+                value = `${Number(params[field.id])}`;
+            }
+            conditions.push(`${field.id} = ${value}`)
+        })
+        if (conditions.length) {
+            return 'WHERE '+conditions.join(' AND ');
+        } else {
+            return '';
+        }
+    }
+
     getAccess() {
       return this.ormDef.access;
     }

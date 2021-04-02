@@ -310,7 +310,7 @@ crudRoutes('session', sessionHandler);
 // Route setup for fetch operations with custom queries.
 app.route(`/sessions/view`)
 .get(async (req, res) => {
-  let results = await sessionHandler.getView();
+  let results = await sessionHandler.getView(req.query);
   res.status(200).send(results);
 });
 app.route(`/adventures/view`)
