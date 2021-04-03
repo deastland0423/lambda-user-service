@@ -31,11 +31,12 @@ class ModelBase {
       return this.ormDef.access;
     }
 
-    async getRecords() {
+    async getRecords(params) {
         console.log('entering getRecords');
         const connection = await mysql.connection();
         try {
-            const sql = `SELECT * FROM ${this.ormDef.table}`
+            const whereClause = this.getWhere(params);
+            const sql = `SELECT * FROM ${this.ormDef.table} ${whereClause}`
             console.log(`DEBUG: getRecords SQL: ${sql}`)
             let recordList = await connection.query(sql);
             return recordList;

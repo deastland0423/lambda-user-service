@@ -267,7 +267,7 @@ function crudRoutes(entity_type, ormHandler) {
 
   app.route(`/${entity_type_plural}`)
   .get(async (req, res) => {
-    let results = await ormHandler.getRecords();
+    let results = await ormHandler.getRecords(req.query);
     res.status(200).send(results);
   })
   .post(async (req, res) => {

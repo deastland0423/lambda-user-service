@@ -11,7 +11,7 @@ const ormDef = {
         },
         {
             id: 'is_empty',
-            quoted: true
+            quoted: false
         },
         {
             id: 'map_id',
