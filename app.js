@@ -80,27 +80,27 @@ app.use( (req, res, next) => {
   if (login_session_id) {
     getLoginSession(login_session_id)
     .then( loginSession => {
-        console.log("Found login Session:",loginSession)
-        if (!('locals' in req)) {
-          req.locals = {};
-        }
-        req.locals.loginSession = loginSession
-        // Load up user record into request locals for access checks.
-        getUser(loginSession.user_id)
-        .then( user => {
-            console.log(`DEBUG: Loaded currentUser from user #${loginSession.user_id}: ${user.username}`)
-            req.locals.currentUser = user;
-            next();
-        })
-        .catch( error => {
-            console.log(`WARNING: Could not load user #${loginSession.user_id} for loginSession ${login_session_id}`);
-            next();
-        })
+      console.log("Found login Session:",loginSession)
+      if (!('locals' in req)) {
+        req.locals = {};
+      }
+      req.locals.loginSession = loginSession
+      // Load up user record into request locals for access checks.
+      getUser(loginSession.user_id)
+      .then( user => {
+          console.log(`DEBUG: Loaded currentUser from user #${loginSession.user_id}: ${user.username}`)
+          req.locals.currentUser = user;
+          next();
       })
+      .catch( error => {
+          console.log(`WARNING: Could not load user #${loginSession.user_id} for loginSession ${login_session_id}`);
+          next();
+      })
+    })
     .catch( error => {
       console.log("DEBUG: no login session found: ",error)
       next();
-    })
+    });
   } else {
     console.log("DEBUG: no login_session_id found")
     next();
@@ -110,29 +110,29 @@ app.use( (req, res, next) => {
 
 // Check authorization for restricted routes.
 app.use( (req, res, next) => {
-    console.log(`AUTH: Checking restricted routes for ${req.method} request to ${req.url}`);
-    // match incoming URL to known. routes
-    const accessCheck = restrictedRoutes.getAccessCheck(req);
-    //if a match is found, check for restrictions
-    if (accessCheck) {
-      //if restrictions are found, check current user's access
-      const user = safeGetProp(req, ['locals', 'currentUser']);
-      console.log(`DEBUG: Route is restricted, checking access for current user with roles: (${user ? user.roles : '<none>'})...`);
-      req.locals.safeGetProp = safeGetProp;
-      const accessCheckResult = accessCheck(req);
-      if (accessCheckResult !== true) {
-        //if user does not have access, return 403 acces denied error
-        console.log("AUTH: Access check failed with result: ",accessCheckResult);
-        res.status(403).send('Access Denied');
-        return;
-      } else {
-        console.log("DEBUG: Access check passed.");
-        next();
-      }
+  console.log(`AUTH: Checking restricted routes for ${req.method} request to ${req.url}`);
+  // match incoming URL to known. routes
+  const accessCheck = restrictedRoutes.getAccessCheck(req);
+  //if a match is found, check for restrictions
+  if (accessCheck) {
+    //if restrictions are found, check current user's access
+    const user = safeGetProp(req, ['locals', 'currentUser']);
+    console.log(`DEBUG: Route is restricted, checking access for current user with roles: (${user ? user.roles : '<none>'})...`);
+    req.locals.safeGetProp = safeGetProp;
+    const accessCheckResult = accessCheck(req);
+    if (accessCheckResult !== true) {
+      //if user does not have access, return 403 acces denied error
+      console.log("AUTH: Access check failed with result: ",accessCheckResult);
+      res.status(403).send('Access Denied');
+      return;
     } else {
-      console.log("DEBUG: Route not restricted.")
+      console.log("DEBUG: Access check passed.");
       next();
     }
+  } else {
+    console.log("DEBUG: Route not restricted.")
+    next();
+  }
 });
 
 
@@ -148,20 +148,20 @@ app.get('/access-rules', async (req, res, next) => {
 
 // Routing all Users queries
 app.route('/users')
-  .get(async (req, res) => {
-    // Fetch all users from DB
-    let results = await getUsers();
+.get(async (req, res) => {
+  // Fetch all users from DB
+  let results = await getUsers();
+  res.status(200).send(results);
+})
+.post(async (req, res) => {
+  try {
+    let results = await addUser(req.body);
+    
     res.status(200).send(results);
-})
-  .post(async (req, res) => {
-    try {
-      let results = await addUser(req.body);
-      
-      res.status(200).send(results);
-    } catch(err) {
-      res.status(400).send(err.message);
-    }
-})
+  } catch(err) {
+    res.status(400).send(err.message);
+  }
+});
 app.route(`/user/:user_id`)
 .delete(async (req, res) => {
   try {
@@ -186,13 +186,11 @@ app.route(`/user/:user_id`)
   } catch(err) {
     res.status(400).send(err.message);
   }
-})
-;
+});
 
 
 // Routing all Roles queries
-app
-  .get('/roles', async (req, res, next) => {
+app.get('/roles', async (req, res, next) => {
   // Fetch all roles from DB
   let results = await getRoles();
   res.status(200).send(results);
