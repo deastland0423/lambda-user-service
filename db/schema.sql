@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS `hexes` (
   `is_explored` tinyint NOT NULL DEFAULT '0',
   `is_polite` tinyint NOT NULL DEFAULT '0',
   `terrain_type` enum('LIGHT_FOREST','DENSE_FOREST','GRASSLAND','MOUNTAIN','SWAMP') NOT NULL,
+  UNIQUE KEY `map_id_coords` (`map_id`, `coords`),
   PRIMARY KEY (`hex_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Defines a hex on the main map.';
 
