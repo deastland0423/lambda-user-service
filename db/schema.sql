@@ -58,16 +58,27 @@ CREATE TABLE IF NOT EXISTS `characters` (
 
 -- Data exporting was unselected.
 
+CREATE TABLE IF NOT EXISTS `hexes` (
+  `hex_id` int NOT NULL AUTO_INCREMENT,
+  `map_id` int NOT NULL DEFAULT '1',
+  `name` varchar(250) NOT NULL,
+  `coords` varchar(10) NOT NULL COMMENT 'x,y coordiantes of the hex on the world map',
+  `is_explored` tinyint NOT NULL DEFAULT '0',
+  `is_polite` tinyint NOT NULL DEFAULT '0',
+  `terrain_type` enum('LIGHT_FOREST','DENSE_FOREST','GRASSLAND','MOUNTAIN','SWAMP') NOT NULL,
+  PRIMARY KEY (`hex_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Defines a hex on the main map.';
+
 -- Dumping structure for table oseitu.locations
 CREATE TABLE IF NOT EXISTS `locations` (
   `location_id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(250) NOT NULL DEFAULT '',
-  `is_empty` tinyint NOT NULL DEFAULT '0',
   `map_id` int NOT NULL DEFAULT '1',
-  `hex` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '0' COMMENT 'Hex on the big map',
+  `hex_id` int NOT NULL,
   `sub_hex` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT 'Small hex within hex',
+  CONSTRAINT `hexes_hex_id_hexes` FOREIGN KEY (`hex_id`) REFERENCES `hexes` (`hex_id`),
   PRIMARY KEY (`location_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Any location on the campaign map. Typically a dungeon or a 6-mile hex.';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Any location within a hex on the campaign map. Typically a dungeon.';
 
 -- Data exporting was unselected.
 

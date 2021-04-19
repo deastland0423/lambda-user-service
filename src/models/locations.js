@@ -1,3 +1,4 @@
+const mysql = require('../utils/mysql_utils');
 const ModelBase = require('./ModelBase');
 
 const ormDef = {
@@ -10,16 +11,10 @@ const ormDef = {
             quoted: true
         },
         {
-            id: 'is_empty',
-            quoted: false
-        },
-        {
             id: 'map_id',
-            quoted: false
         },
         {
-            id: 'hex',
-            quoted: true
+            id: 'hex_id',
         },
         {
             id: 'sub_hex',
@@ -35,5 +30,21 @@ const ormDef = {
 }
 
 const LocationHandler = new ModelBase(ormDef);
+
+LocationHandler.getView = async function(params) {
+    console.log(`entering locations.getView, params=`,params);
+    const connection = await mysql.connection();
+    try {
+        const whereClause = LocationHandler.getWhere(params);
+        const sql = `SELECT l.*, h.name AS hex_name, h.coords AS hex_coords FROM ${ormDef.table} l LEFT JOIN hexes h ON l.hex_id = h.hex_id ${whereClause}`
+        console.log(`DEBUG: getView SQL: ${sql}`)
+        let recordList = await connection.query(sql);
+        return recordList;
+    } catch(err) {
+        throw err;
+    } finally {
+        await connection.release();
+    }
+}
 
 module.exports = LocationHandler;

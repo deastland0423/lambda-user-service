@@ -49,6 +49,10 @@ functions:
           method: ANY
           cors: ${self:custom.cors}
       - http:
+          path: /locations/view
+          method: GET
+          cors: ${self:custom.cors}
+      - http:
           path: /characters
           method: ANY
           cors: ${self:custom.cors}

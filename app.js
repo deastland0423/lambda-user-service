@@ -17,6 +17,7 @@ const sessionHandler = require('./src/models/sessions');
 const adventureHandler = require('./src/models/adventures');
 const characterHandler = require('./src/models/characters');
 const settlementHandler = require('./src/models/settlements');
+const hexHandler = require('./src/models/hexes');
 
 const ALLOWED_ORIGINS = [
 	'https://main.dmonfkjciylm6.amplifyapp.com',
@@ -26,6 +27,7 @@ const ALLOWED_ORIGINS = [
 restrictedRoutes.addRoutes(userAccess);
 restrictedRoutes.addRoutes(adventureHandler.getAccess());
 restrictedRoutes.addRoutes(characterHandler.getAccess());
+restrictedRoutes.addRoutes(hexHandler.getAccess());
 restrictedRoutes.addRoutes(locationHandler.getAccess());
 restrictedRoutes.addRoutes(sessionHandler.getAccess());
 restrictedRoutes.addRoutes(settlementHandler.getAccess());
@@ -261,9 +263,14 @@ app
 
 // Genericized CRUD operation for backend data tables
 function crudRoutes(entity_type, ormHandler) {
-  //TODO: move these to entityDef & share w/ front-end
-  const entity_type_plural = entity_type + 's';
-  const entity_type_id_field = entity_type + '_id';
+  // move entityDefs from FE to BE & share w/ front-end like accessRoutes
+  let entity_type_plural;
+  if ('plural' in ormHandler.ormDef) {
+    entity_type_plural = ormHandler.ormDef.plural;
+  } else {
+    entity_type_plural = entity_type + 's';
+  }
+  const entity_type_id_field = ormHandler.ormDef.id_field;
 
   app.route(`/${entity_type_plural}`)
   .get(async (req, res) => {
@@ -302,6 +309,7 @@ function crudRoutes(entity_type, ormHandler) {
 
 // Route setup for standard CRUD operations
 crudRoutes('character', characterHandler);
+crudRoutes('hex', hexHandler);
 crudRoutes('location', locationHandler);
 crudRoutes('settlement', settlementHandler);
 crudRoutes('adventure', adventureHandler);
@@ -323,6 +331,11 @@ app.route('/characters/view')
     let results = await characterHandler.getView();
     res.status(200).send(results);
   });
+app.route('/locations/view')
+.get(async (req, res) => {
+  let results = await locationHandler.getView(req.query);
+  res.status(200).send(results);
+});
 
 module.exports.express = app;
 module.exports.server = sls(app);
