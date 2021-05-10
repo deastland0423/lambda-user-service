@@ -35,7 +35,7 @@ LocationHandler.getView = async function(params) {
   console.log(`entering locations.getView, params=`,params);
   const connection = await mysql.connection();
   try {
-    const whereClause = LocationHandler.getWhere(params);
+    const whereClause = LocationHandler.getWhere(params, 'l');
     const sql = `SELECT l.*, h.name AS hex_name, h.coords AS hex_coords FROM ${ormDef.table} l LEFT JOIN hexes h ON l.hex_id = h.hex_id ${whereClause}`
     console.log(`DEBUG: getView SQL: ${sql}`)
     let recordList = await connection.query(sql);

@@ -40,7 +40,7 @@ SessionHandler.getView = async function(params) {
   console.log(`entering sessions.getView, params=`,params);
   const connection = await mysql.connection();
   try {
-    const whereClause = SessionHandler.getWhere(params);
+    const whereClause = SessionHandler.getWhere(params, 's');
     const sql = `SELECT s.*, u.user_id, u.username, u.email_address FROM ${ormDef.table} s LEFT JOIN users u ON s.host_user_id = u.user_id ${whereClause}`
     console.log(`DEBUG: getView SQL: ${sql}`)
     let recordList = await connection.query(sql);

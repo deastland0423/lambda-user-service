@@ -5,7 +5,8 @@ class ModelBase {
     this.ormDef = ormDef;
   }
 
-  getWhere(params) {
+  getWhere(params, table_alias) {
+    if(typeof table_alias === 'undefined') table_alias = this.ormDef.table;
     let conditions = [];
     let values = []
     this.ormDef.insert_fields.forEach(field => {
@@ -18,7 +19,7 @@ class ModelBase {
       } else {
         value = `${Number(params[field.id])}`;
       }
-      conditions.push(`${field.id} = ${value}`);
+      conditions.push(`${table_alias}.${field.id} = ${value}`);
     })
     if (conditions.length) {
       return 'WHERE '+conditions.join(' AND ');
