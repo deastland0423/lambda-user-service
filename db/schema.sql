@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email_address` varchar(250) NOT NULL,
   `password` varchar(250) NOT NULL,
   `username` varchar(250) NOT NULL,
+  `prefs` JSON,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `email_address` (`email_address`),
   UNIQUE KEY `username` (`username`)

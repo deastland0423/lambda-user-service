@@ -17,6 +17,10 @@ const ormDef = {
     {
       id: 'username',
       quoted: true
+    },
+    {
+      id: 'prefs',
+      quoted: 'json'
     }
   ]
 }
@@ -42,6 +46,13 @@ function _combineRoles(userList) {
   return Object.values(combinedUserList);
 }
 
+function _decodeJson(userRecord) {
+  if (userRecord.prefs) {
+    userRecord.prefs = JSON.parse(userRecord.prefs);
+  }
+  return userRecord;
+}
+
 async function getUsers() {
   const connection = await mysql.connection();
   try {
@@ -59,9 +70,12 @@ async function getUser(user_id) {
   const connection = await mysql.connection();
   try {
     console.log(`entering getUser(${user_id})`);
-    const userList = await connection.query(`select users.user_id, username, email_address, role as roles FROM users LEFT JOIN user_roles ON users.user_id = user_roles.user_id WHERE users.user_id = ${user_id}`);
+    const userList = await connection.query(`select users.user_id, username, email_address, prefs, role as roles FROM users LEFT JOIN user_roles ON users.user_id = user_roles.user_id WHERE users.user_id = ${user_id}`);
     const combinedUserList = _combineRoles(userList);
-    return combinedUserList[0];
+    if(!Array.isArray(combinedUserList) || !combinedUserList.length)
+      throw `Could not load user with ID ${user_id}`;
+    const jsonDecoded = _decodeJson(combinedUserList[0]);
+    return jsonDecoded;
   } catch(err) {
     throw err;
   } finally {
@@ -73,12 +87,15 @@ async function verifyUser(email_address, password) {
   const connection = await mysql.connection();
   try {
       console.log('verifying login for: ', email_address);
-      const sql = `SELECT users.user_id, username, email_address, role as roles FROM users LEFT JOIN user_roles ON users.user_id = user_roles.user_id WHERE email_address = '${email_address}' AND password = '${password}'`;
+      const sql = `SELECT users.user_id, username, email_address, prefs, role as roles FROM users LEFT JOIN user_roles ON users.user_id = user_roles.user_id WHERE email_address = '${email_address}' AND password = '${password}'`;
       let userResult = await connection.query(sql);
       console.log('Raw result from verifying user: ', userResult);
       const combinedUserResult = _combineRoles(userResult);
       console.log('Combined result from verifying user: ', combinedUserResult);
-      return combinedUserResult;
+      if(!Array.isArray(combinedUserResult) || !combinedUserResult.length)
+        return null;
+      const jsonDecoded = _decodeJson(combinedUserResult[0]);
+      return jsonDecoded;
   } catch (err) {
       throw err;
   } finally {
@@ -142,7 +159,10 @@ async function updateUser(record_id, data, update_roles) {
     ormDef.insert_fields.forEach(field => {
       if (field.id in data) {
         if (field.quoted) {
-          fieldUpdates.push(`${field.id} = '${data[field.id]}'`)
+          if (field.quoted === 'json')
+            fieldUpdates.push(`${field.id} = '${JSON.stringify(data[field.id])}'`)
+          else
+            fieldUpdates.push(`${field.id} = '${data[field.id]}'`)
         } else {
           fieldUpdates.push(`${field.id} = ${data[field.id]}`)
         }

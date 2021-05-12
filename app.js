@@ -93,7 +93,7 @@ app.use( (req, res, next) => {
           next();
       })
       .catch( error => {
-          console.log(`WARNING: Could not load user #${loginSession.user_id} for loginSession ${login_session_id}`);
+          console.log(`WARNING: Could not load user #${loginSession.user_id} for loginSession ${login_session_id}`, error);
           next();
       })
     })
@@ -181,7 +181,8 @@ app.route(`/user/:user_id`)
       delete req.body.is_dm;
       delete req.body.is_player;
     }
-    let results = await updateUser(req.params.user_id, req.body, currentRoles.includes('ADMIN'));
+    const update_roles = currentRoles.includes('ADMIN') && (typeof req.body.roles !== 'undefined');
+    let results = await updateUser(req.params.user_id, req.body, update_roles);
     res.status(200).send(results);
   } catch(err) {
     res.status(400).send(err.message);
@@ -202,9 +203,8 @@ app
       const email_address = req.body.email_address;
       const password = req.body.password;
       console.log('POST /login body: ', req.body);
-      let results = await verifyUser(email_address, password);
-      if (Array.isArray(results) && results.length) {
-        const user = results[0]
+      const user = await verifyUser(email_address, password);
+      if (user) {
         // Login attempt successful, create login session.
         const loginSession = await createLoginSession(user.user_id);
         // Return logged-in user record, and set client-side cookie w/ session ID.
