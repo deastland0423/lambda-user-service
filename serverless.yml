@@ -93,6 +93,10 @@ functions:
           method: ANY
           cors: ${self:custom.cors}
       - http:
+          path: /hexes/view
+          method: GET
+          cors: ${self:custom.cors}
+      - http:
           path: /hex/{id}
           method: ANY
           cors: ${self:custom.cors}

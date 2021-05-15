@@ -40,4 +40,20 @@ const ormDef = {
 
 const HexHandler = new ModelBase(ormDef);
 
+HexHandler.getView = async function(params) {
+  console.log(`entering hexes.getView, params=`,params);
+  const connection = await mysql.connection();
+  try {
+    const whereClause = HexHandler.getWhere(params, 'h');
+    const sql = `SELECT h.*, l.location_id FROM ${ormDef.table} h LEFT JOIN locations l ON l.hex_id = h.hex_id AND l.sub_hex = '' ${whereClause}`
+    console.log(`DEBUG: getView SQL: ${sql}`)
+    let recordList = await connection.query(sql);
+    return recordList;
+  } catch(err) {
+    throw err;
+  } finally {
+    await connection.release();
+  }
+}
+
 module.exports = HexHandler;

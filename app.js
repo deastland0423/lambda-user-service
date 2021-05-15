@@ -329,6 +329,11 @@ app.route('/characters/view')
     let results = await characterHandler.getView();
     res.status(200).send(results);
   });
+app.route('/hexes/view')
+  .get(async (req, res) => {
+    let results = await hexHandler.getView(req.query);
+    res.status(200).send(results);
+  });
 app.route('/locations/view')
 .get(async (req, res) => {
   let results = await locationHandler.getView(req.query);
