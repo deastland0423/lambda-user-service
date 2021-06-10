@@ -17,6 +17,7 @@ const sessionHandler = require('./src/models/sessions');
 const adventureHandler = require('./src/models/adventures');
 const characterHandler = require('./src/models/characters');
 const settlementHandler = require('./src/models/settlements');
+const possessionHandler = require('./src/models/character_possessions');
 const hexHandler = require('./src/models/hexes');
 
 const ALLOWED_ORIGINS = [
@@ -31,6 +32,7 @@ restrictedRoutes.addRoutes(hexHandler.getAccess());
 restrictedRoutes.addRoutes(locationHandler.getAccess());
 restrictedRoutes.addRoutes(sessionHandler.getAccess());
 restrictedRoutes.addRoutes(settlementHandler.getAccess());
+restrictedRoutes.addRoutes(possessionHandler.getAccess());
 
 const routes = restrictedRoutes.getRoutes();
 
@@ -112,6 +114,9 @@ app.use( (req, res, next) => {
 app.use( (req, res, next) => {
   console.log(`AUTH: Checking restricted routes for ${req.method} request to ${req.url}`);
   // match incoming URL to known. routes
+  if (!('locals' in req)) {
+    req.locals = {};
+  }
   const accessCheck = restrictedRoutes.getAccessCheck(req);
   //if a match is found, check for restrictions
   if (accessCheck) {
@@ -312,6 +317,7 @@ crudRoutes('location', locationHandler);
 crudRoutes('settlement', settlementHandler);
 crudRoutes('adventure', adventureHandler);
 crudRoutes('session', sessionHandler);
+crudRoutes('possession', possessionHandler);
 
 // Route setup for fetch operations with custom queries.
 app.route(`/sessions/view`)
