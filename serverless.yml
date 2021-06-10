@@ -120,3 +120,11 @@ functions:
           path: /logout
           method: POST
           cors: ${self:custom.cors}
+      - http:
+          path: /possession/{id}
+          method: ANY
+          cors: ${self:custom.cors}
+      - http:
+          path: /possessions
+          method: ANY
+          cors: ${self:custom.cors}
