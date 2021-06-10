@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `adventure_participants` (
 
 -- Dumping structure for table oseitu.characters
 CREATE TABLE IF NOT EXISTS `characters` (
-  `character_id` int NOT NULL,
+  `character_id` int NOT NULL AUTO_INCREMENT,
   `owner_user_id` int NOT NULL,
   `name` varchar(250) NOT NULL DEFAULT '',
   `class` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
