@@ -137,6 +137,19 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
   CONSTRAINT `user_roles_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Lists all of the roles for each user';
 
+CREATE TABLE IF NOT EXISTS `character_possessions` (
+	`possession_id` INT(10) NOT NULL AUTO_INCREMENT,
+	`character_id` INT(10) NULL DEFAULT NULL,
+	`name` VARCHAR(512) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`player_description` TEXT NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`admin_description` TEXT NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`value` DECIMAL(20,4) NULL DEFAULT '0.0000',
+	`in_inventory` TINYINT(3) NULL DEFAULT '0',
+	PRIMARY KEY (`possession_id`) USING BTREE,
+	INDEX `character_possession_fk` (`character_id`) USING BTREE,
+	CONSTRAINT `character_possession_fk` FOREIGN KEY (`character_id`) REFERENCES `oseitu`.`characters` (`character_id`) ON UPDATE NO ACTION ON DELETE NO ACTION
+) COLLATE=utf8mb4_0900_ai_ci ENGINE=InnoDB AUTO_INCREMENT=6 CHARSET=utf8mb4;
+
 -- Data exporting was unselected.
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
