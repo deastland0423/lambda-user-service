@@ -5,7 +5,7 @@ class ModelBase {
     this.ormDef = ormDef;
   }
 
-  getWhere(params, table_alias) {
+  getWhere(params, table_alias, existing_where) {
     if(typeof table_alias === 'undefined') table_alias = this.ormDef.table;
     let conditions = [];
     let values = []
@@ -22,7 +22,10 @@ class ModelBase {
       conditions.push(`${table_alias}.${field.id} = ${value}`);
     })
     if (conditions.length) {
-      return 'WHERE '+conditions.join(' AND ');
+      if (existing_where)
+        return 'AND '+conditions.join(' AND ');
+      else
+        return 'WHERE '+conditions.join(' AND ');
     } else {
       return '';
     }

@@ -30,11 +30,12 @@ const ormDef = {
 
 const AdventureHandler = new ModelBase(ormDef);
 
-AdventureHandler.getView = async function() {
-  console.log('entering adventures.getView');
+AdventureHandler.getView = async function(params) {
+  console.log('entering adventures.getView, params=',params);
   const connection = await mysql.connection();
   try {
-    const sql = `SELECT a.*, s.start_time, l.name AS location_name FROM ${ormDef.table} a, sessions s, locations l WHERE a.session_id = s.session_id AND a.location_id = l.location_id`
+    const whereClause = AdventureHandler.getWhere(params, 'a', true);
+    const sql = `SELECT a.*, s.start_time, l.name AS location_name FROM ${ormDef.table} a, sessions s, locations l WHERE a.session_id = s.session_id AND a.location_id = l.location_id ${whereClause}`
     console.log(`DEBUG: getView SQL: ${sql}`)
     let recordList = await connection.query(sql);
     return recordList;
