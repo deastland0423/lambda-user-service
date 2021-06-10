@@ -321,12 +321,12 @@ app.route(`/sessions/view`)
 });
 app.route(`/adventures/view`)
 .get(async (req, res) => {
-  let results = await adventureHandler.getView();
+  let results = await adventureHandler.getView(req.query);
   res.status(200).send(results);
 });
 app.route('/characters/view')
   .get(async (req, res) => {
-    let results = await characterHandler.getView();
+    let results = await characterHandler.getView(req.query);
     res.status(200).send(results);
   });
 app.route('/hexes/view')

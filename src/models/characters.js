@@ -37,11 +37,12 @@ const ormDef = {
 
 const CharacterHandler = new ModelBase(ormDef);
 
-CharacterHandler.getView = async function() {
-  console.log('entering characters.getView');
+CharacterHandler.getView = async function(params) {
+  console.log('entering characters.getView, params=',params);
   const connection = await mysql.connection();
   try {
-    const sql = `SELECT c.*, u.username FROM ${ormDef.table} c, users u WHERE c.owner_user_id = u.user_id;`
+    const whereClause = CharacterHandler.getWhere(params, 'c', true);
+    const sql = `SELECT c.*, u.username FROM ${ormDef.table} c, users u WHERE c.owner_user_id = u.user_id ${whereClause}`
     console.log(`DEBUG: getView SQL: ${sql}`)
     let recordList = await connection.query(sql);
     return recordList;
