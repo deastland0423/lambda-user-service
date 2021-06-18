@@ -28,10 +28,14 @@ const ormDef = {
     }
   ],
   access: {
-    'POST /characters': (req) => (['PLAYER','DM','ADMIN'].some(role => req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes(role))),
+    'POST /characters': (req) => (['PLAYER','DM','ADMIN'].some(role => (req?.locals?.currentUser?.roles ?? []).includes(role))),
     'GET /characters': (req) => true,
-    'PUT /character/([0-9]+)': (req) => req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes('ADMIN'),  // Only Admins can update for now
-    'DELETE /character/([0-9]+)': (req) => req.locals.safeGetProp(req, ['locals', 'currentUser', 'roles'], []).includes('ADMIN')
+    'PUT /character/([0-9]+)': (req) =>
+      ( (req?.locals?.currentUser?.roles ?? []).includes('ADMIN') // Admins can edit any char
+        || (req?.locals?.currentUser?.user_id && req?.locals?.currentUser?.user_id == req?.locals?.row?.owner_user_id)
+      ) // Or the owner can edit their own char
+    ,
+    'DELETE /character/([0-9]+)': (req) => (req?.locals?.currentUser?.roles ?? []).includes('ADMIN')
   }
 }
 
